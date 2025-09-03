@@ -1,14 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    tools:context=".ui.AddSaldoActivity"
-    android:orientation="vertical">
+    android:padding="16dp">
 
-    <!-- Título -->
     <TextView
         android:id="@+id/txtTitulo"
         android:layout_width="wrap_content"
@@ -19,57 +14,39 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="140dp" />
+        android:layout_marginTop="140dp"/>
 
-    <!-- Saldo total -->
+    <!-- Nombre del gasto -->
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutSaldo"
+        android:id="@+id/layoutNombreGasto"
         android:layout_width="0dp"
+        android:layout_marginTop="44dp"
         android:layout_height="wrap_content"
-        android:hint="Saldo total"
+        android:hint="Nombre del gasto"
         app:layout_constraintTop_toBottomOf="@id/txtTitulo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="44dp">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edtSaldo"
+            android:id="@+id/etNombreGasto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal" />
+            android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Gastos fijos -->
+    <!-- Precio -->
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutGastosFijos"
+        android:id="@+id/layoutPrecioGasto"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Gastos fijos"
-        app:layout_constraintTop_toBottomOf="@id/layoutSaldo"
+        android:hint="Precio"
+        app:layout_constraintTop_toBottomOf="@id/layoutNombreGasto"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edtGastosFijos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Ahorro -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutAhorro"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Ahorro"
-        app:layout_constraintTop_toBottomOf="@id/layoutGastosFijos"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edtAhorro"
+            android:id="@+id/etPrecioGasto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberDecimal" />
@@ -77,11 +54,11 @@
 
     <!-- Botón Guardar -->
     <Button
-        android:id="@+id/btnGuardar"
+        android:id="@+id/btnGuardarGasto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Guardar"
-        app:layout_constraintTop_toBottomOf="@id/layoutAhorro"
+        android:text="Guardar gasto"
+        app:layout_constraintTop_toBottomOf="@id/layoutPrecioGasto"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />

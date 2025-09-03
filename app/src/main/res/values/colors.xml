@@ -7,4 +7,14 @@
     <color name="light_blue_A200">#FF40C4FF</color>
     <color name="light_blue_A400">#FF00B0FF</color>
     <color name="black_overlay">#66000000</color>
+    <color name="appBackground">#F5F5F5</color> <!-- Gris muy claro, no blanco puro -->
+    <color name="colorPrimary">#1976D2</color> <!-- Azul medio -->
+    <color name="colorOnPrimary">#FFFFFF</color> <!-- Texto sobre primary -->
+    <color name="colorAccent">#FF9800</color> <!-- Naranja para botones/acento -->
+    <color name="textColor">#212121</color> <!-- Texto principal -->
+    <color name="appBackgroundDark">#121212</color> <!-- Negro suave tipo Material Dark -->
+    <color name="colorPrimaryDark">#90CAF9</color> <!-- Azul claro (resalta en fondo oscuro) -->
+    <color name="colorOnPrimaryDark">#000000</color> <!-- Texto oscuro sobre azul claro -->
+    <color name="colorAccentDark">#FFB74D</color> <!-- Naranja claro -->
+    <color name="textColorDark">#E0E0E0</color> <!-- Texto gris claro -->
 </resources>
