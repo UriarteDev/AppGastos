@@ -6,40 +6,30 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import com.smartsaldo.app.db.entities.Usuario
 
 @Dao
 interface UsuarioDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(usuario: Usuario): Long {
-        return TODO("Provide the return value")
-    }
-    suspend fun update(usuario: Usuario) {
-    }
+    suspend fun insertOrUpdate(usuario: Usuario)
+
+    @Query("SELECT * FROM usuarios WHERE uid = :uid")
+    suspend fun getUsuarioPorUid(uid: String): Usuario?
+
+    @Query("SELECT * FROM usuarios WHERE email = :email LIMIT 1")
+    suspend fun getUsuarioPorEmail(email: String): Usuario?
+
+    @Update
+    suspend fun updateUsuario(usuario: Usuario)
 
     @Delete
-    suspend fun delete(usuario: Usuario) {
-    }
+    suspend fun deleteUsuario(usuario: Usuario)
 
-    @Query("SELECT * FROM usuarios WHERE id = :id LIMIT 1")
-    suspend fun getById(id: Long): Usuario? {
-        return TODO("Provide the return value")
-    }
+    @Query("UPDATE usuarios SET isActive = 0")
+    suspend fun deactivateAllUsers()
 
-    @Query("SELECT * FROM usuarios ORDER BY id LIMIT 1")
-    suspend fun getPrimero(): Usuario? {
-        return TODO("Provide the return value")
-    }
-
-    /**
-     * Devuelve el primer usuario, y si no hay, crea uno por defecto.
-     */
-    @Transaction
-    suspend fun getOrCreateDefault(): Usuario {
-        val actual = getPrimero()
-        if (actual != null) return actual
-        val nuevo = Usuario(nombre = "Usuario")
-        val newId = insert(nuevo).toLong()
-        return getById(newId)!!
-    }
+    @Query("SELECT * FROM usuarios WHERE isActive = 1 LIMIT 1")
+    suspend fun getUsuarioActivo(): Usuario?
 }

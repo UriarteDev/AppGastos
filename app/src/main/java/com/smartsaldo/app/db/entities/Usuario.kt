@@ -5,7 +5,11 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "usuarios")
 data class Usuario(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val nombre: String
+    @PrimaryKey val uid: String,
+    val email: String,
+    val displayName: String?,
+    val photoURL: String?,
+    val provider: String, // "email", "google"
+    val createdAt: Long = System.currentTimeMillis(),
+    val isActive: Boolean = true
 )

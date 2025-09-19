@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainActivity">
+    app:startDestination="@id/nav_home">
 
-    <activity
-        android:id="@+id/mainActivity"
-        android:name="com.smartsaldo.app.ui.MainActivity"
-        android:label="activity_main"
-        tools:layout="@layout/activity_main" />
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.smartsaldo.app.ui.HomeFragment"
+        android:label="Inicio" />
+
+    <fragment
+        android:id="@+id/nav_auth"
+        android:name="com.smartsaldo.app.ui.auth.LoginFragment"
+        android:label="Login" />
+
+    <dialog
+        android:id="@+id/add_transaction_dialog"
+        android:name="com.smartsaldo.app.ui.home.AddTransaccionDialog"
+        android:label="Agregar Transacción" />
+
 </navigation>

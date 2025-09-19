@@ -1,90 +1,69 @@
 package com.smartsaldo.app.ui
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.findNavController
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.smartsaldo.app.R
-import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
-import com.github.mikephil.charting.utils.ColorTemplate
-import androidx.activity.viewModels
-import com.smartsaldo.app.db.entities.Movimiento
+import com.smartsaldo.app.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var pieChart: PieChart
-    private val viewModel: MovimientoViewModel by viewModels()
-    private val usuarioId = 1L // ejemplo, usuario fijo
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var adView: AdView
+    private val adManager = AdManager.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        pieChart = findViewById(R.id.pieChart)
+        setupNavigation()
+        setupAdMob()
+        setupFAB()
+    }
 
-        val btnAddSaldo = findViewById<Button>(R.id.btnAddSaldo)
-        btnAddSaldo.setOnClickListener {
-            val intent = Intent(this, AddSaldoActivity::class.java)
-            intent.putExtra("usuarioId", usuarioId)
-            startActivityForResult(intent, 1001)
-        }
+    private fun setupNavigation() {
+        val navController = findNavController(R.id.nav_host_fragment)
+        binding.bottomNavigation.setupWithNavController(navController)
 
-        val btnAddGasto: Button = findViewById(R.id.btnAddGasto)
-        btnAddGasto.setOnClickListener {
-            val intent = Intent(this, AddGastoActivity::class.java)
-            intent.putExtra("usuarioId", usuarioId) // pasar el usuario actual
-            startActivity(intent)
-        }
+        setSupportActionBar(binding.toolbar)
+    }
 
-        findViewById<Button>(R.id.btnEliminarGasto).setOnClickListener {
-            val intent = Intent(this, EliminarGastoActivity::class.java)
-            startActivity(intent)
-        }
+    private fun setupAdMob() {
+        // Inicializar AdMob
+        adManager.initializeAds(this)
 
+        // Configurar banner
+        adView = binding.adView
+        adManager.loadBannerAd(adView)
+    }
 
-        viewModel.cargarMovimientos(usuarioId)
-
-        // observar movimientos
-        viewModel.movimientos.observe(this) { lista ->
-            val listaUsuario = lista.filter { it.usuarioId == usuarioId }
-            actualizarGrafico(listaUsuario)
+    private fun setupFAB() {
+        binding.fabAddTransaction.setOnClickListener {
+            // Navegar a dialog de agregar transacción
+            findNavController(R.id.nav_host_fragment)
+                .navigate(R.id.action_to_add_transaction_dialog)
         }
     }
 
-    private fun actualizarGrafico(listaUsuario: List<Movimiento>) {
-        // Obtener el último saldo ingresado (tipo INGRESO)
-        val ultimoSaldo = listaUsuario
-            .filter { it.tipo == "INGRESO" }
-            .maxByOrNull { it.fecha }?.monto?.toFloat() ?: 0f
+    override fun onPause() {
+        adView.pause()
+        super.onPause()
+    }
 
-        val gastosFijos = listaUsuario.filter { it.tipo == "GASTO_FIJO" }.sumOf { it.monto.toDouble() }.toFloat()
-        val ahorros = listaUsuario.filter { it.tipo == "AHORRO" }.sumOf { it.monto.toDouble() }.toFloat()
-        val gastos = listaUsuario.filter { it.tipo == "GASTO" }.sumOf { it.monto.toDouble() }.toFloat()
-        val disponible = ultimoSaldo - gastosFijos - ahorros - gastos
+    override fun onResume() {
+        super.onResume()
+        adView.resume()
+    }
 
-        val entries = ArrayList<PieEntry>()
-        if (gastosFijos > 0f) entries.add(PieEntry(gastosFijos, "Gastos Fijos"))
-        if (ahorros > 0f) entries.add(PieEntry(ahorros, "Ahorros"))
-        if (gastos > 0f) entries.add(PieEntry(gastos, "Gastos"))
-        if (disponible > 0f) entries.add(PieEntry(disponible, "Dinero disponible"))
-
-        if (entries.isEmpty()) {
-            pieChart.clear()
-            pieChart.setNoDataText("Añade saldo para ver el grafico")
-            return
-        }
-
-        val dataSet = PieDataSet(entries, "Finanzas")
-        dataSet.setColors(ColorTemplate.MATERIAL_COLORS.toList())
-        dataSet.valueTextSize = 15f   // en "sp" (default es 13f)
-        val pieData = PieData(dataSet)
-        pieChart.centerText = "Saldo = $ultimoSaldo"
-        pieChart.data = pieData
-        pieChart.invalidate()
-        pieChart.legend.isEnabled = false
-        pieChart.description.isEnabled = false
+    override fun onDestroy() {
+        adView.destroy()
+        super.onDestroy()
     }
 }

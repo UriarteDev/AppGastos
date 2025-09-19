@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "590560104917",
+    "project_id": "smartsaldo-96e16",
+    "storage_bucket": "smartsaldo-96e16.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:590560104917:android:9ec4eef363ab38df332d5c",
+        "android_client_info": {
+          "package_name": "com.smartsaldo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEi4wfMlUQtBYT239lBwR9bWho8ItADDk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
