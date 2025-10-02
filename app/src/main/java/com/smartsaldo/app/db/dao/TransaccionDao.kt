@@ -7,21 +7,33 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TransaccionDao {
 
-    // ✅ Obtener transacciones con categoría
     @Query("""
-        SELECT t.*, c.nombre as categoriaNombre, c.icono, c.color, c.tipo as categoriaTipo
-        FROM transacciones t 
-        INNER JOIN categorias c ON t.categoriaId = c.id 
-        WHERE t.usuarioId = :usuarioId 
-        ORDER BY t.fecha DESC, t.createdAt DESC
+        SELECT t.*, 
+               c.id as categoria_id,
+               c.nombre as categoria_nombre, 
+               c.icono as categoria_icono,
+               c.color as categoria_color,
+               c.tipo as categoria_tipo,
+               c.esDefault as categoria_esDefault,
+               c.usuarioId as categoria_usuarioId
+        FROM transacciones t
+        LEFT JOIN categorias c ON t.categoriaId = c.id
+        WHERE t.usuarioId = :usuarioId
+        ORDER BY t.fecha DESC
     """)
     fun getTransaccionesConCategoria(usuarioId: String): Flow<List<TransaccionConCategoria>>
 
-    // ✅ Filtrar por rango de fechas
     @Query("""
-        SELECT t.*, c.nombre as categoriaNombre, c.icono, c.color, c.tipo as categoriaTipo
+        SELECT t.*, 
+               c.id as categoria_id,
+               c.nombre as categoria_nombre, 
+               c.icono as categoria_icono,
+               c.color as categoria_color,
+               c.tipo as categoria_tipo,
+               c.esDefault as categoria_esDefault,
+               c.usuarioId as categoria_usuarioId
         FROM transacciones t 
-        INNER JOIN categorias c ON t.categoriaId = c.id 
+        LEFT JOIN categorias c ON t.categoriaId = c.id 
         WHERE t.usuarioId = :usuarioId 
         AND t.fecha BETWEEN :fechaInicio AND :fechaFin
         ORDER BY t.fecha DESC
@@ -32,11 +44,17 @@ interface TransaccionDao {
         fechaFin: Long
     ): Flow<List<TransaccionConCategoria>>
 
-    // ✅ Filtrar por categoría
     @Query("""
-        SELECT t.*, c.nombre as categoriaNombre, c.icono, c.color, c.tipo as categoriaTipo
+        SELECT t.*, 
+               c.id as categoria_id,
+               c.nombre as categoria_nombre, 
+               c.icono as categoria_icono,
+               c.color as categoria_color,
+               c.tipo as categoria_tipo,
+               c.esDefault as categoria_esDefault,
+               c.usuarioId as categoria_usuarioId
         FROM transacciones t 
-        INNER JOIN categorias c ON t.categoriaId = c.id 
+        LEFT JOIN categorias c ON t.categoriaId = c.id 
         WHERE t.usuarioId = :usuarioId AND t.categoriaId = :categoriaId
         ORDER BY t.fecha DESC
     """)
@@ -45,11 +63,17 @@ interface TransaccionDao {
         categoriaId: Long
     ): Flow<List<TransaccionConCategoria>>
 
-    // ✅ Buscar por descripción
     @Query("""
-        SELECT t.*, c.nombre as categoriaNombre, c.icono, c.color, c.tipo as categoriaTipo
+        SELECT t.*, 
+               c.id as categoria_id,
+               c.nombre as categoria_nombre, 
+               c.icono as categoria_icono,
+               c.color as categoria_color,
+               c.tipo as categoria_tipo,
+               c.esDefault as categoria_esDefault,
+               c.usuarioId as categoria_usuarioId
         FROM transacciones t 
-        INNER JOIN categorias c ON t.categoriaId = c.id 
+        LEFT JOIN categorias c ON t.categoriaId = c.id 
         WHERE t.usuarioId = :usuarioId 
         AND (t.descripcion LIKE '%' || :busqueda || '%' OR t.notas LIKE '%' || :busqueda || '%')
         ORDER BY t.fecha DESC
@@ -59,7 +83,6 @@ interface TransaccionDao {
         busqueda: String
     ): Flow<List<TransaccionConCategoria>>
 
-    // ✅ CRUD básico
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaccion(transaccion: Transaccion): Long
 
@@ -72,7 +95,6 @@ interface TransaccionDao {
     @Query("SELECT * FROM transacciones WHERE id = :id")
     suspend fun getTransaccionPorId(id: Long): Transaccion?
 
-    // ✅ Estadísticas mensuales
     @Query("""
         SELECT 
             strftime('%Y-%m', datetime(fecha/1000, 'unixepoch')) as mes,
@@ -86,7 +108,6 @@ interface TransaccionDao {
     """)
     fun getEstadisticasMensuales(usuarioId: String): Flow<List<EstadisticaMensual>>
 
-    // ✅ Total por categoría (para gráfico)
     @Query("""
         SELECT 
             c.nombre as categoria,
@@ -109,6 +130,7 @@ interface TransaccionDao {
         tipo: TipoTransaccion
     ): Flow<List<TotalPorCategoria>>
 }
+
 data class EstadisticaMensual(
     val mes: String,
     val totalIngresos: Double,

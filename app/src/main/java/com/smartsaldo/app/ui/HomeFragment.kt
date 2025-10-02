@@ -8,6 +8,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.smartsaldo.app.R
 import kotlinx.coroutines.launch
+import com.smartsaldo.app.databinding.FragmentHomeBinding
+import com.smartsaldo.app.db.dao.EstadisticaMensual
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {

@@ -1,5 +1,6 @@
 package com.smartsaldo.app.db.entities
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
@@ -47,6 +48,8 @@ enum class TipoTransaccion {
 
 // ===== DATA CLASS PARA VISTA CON CATEGORIA =====
 data class TransaccionConCategoria(
-    val transaccion: Transaccion,
-    val categoria: Categoria
+    @Embedded val transaccion: Transaccion,
+
+    @Embedded(prefix = "categoria_")
+    val categoria: Categoria?
 )

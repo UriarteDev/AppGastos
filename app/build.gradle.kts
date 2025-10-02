@@ -4,6 +4,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-kapt")
     alias(libs.plugins.google.services) // Agregar esta línea
+    id("com.google.dagger.hilt.android")
 }
 
 android {

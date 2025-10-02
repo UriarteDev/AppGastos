@@ -7,8 +7,12 @@ import com.smartsaldo.app.db.repository.TransaccionRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
+import com.smartsaldo.app.db.repository.CategoriaRepository
+import com.smartsaldo.app.db.dao.EstadisticaMensual
+import java.util.Collections.emptyList
+import javax.inject.Inject
 
-class TransaccionViewModel(
+class TransaccionViewModel @Inject constructor(
     private val transaccionRepository: TransaccionRepository,
     private val categoriaRepository: CategoriaRepository
 ) : ViewModel() {

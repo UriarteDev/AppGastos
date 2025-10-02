@@ -14,6 +14,7 @@ import com.smartsaldo.app.db.entities.Categoria
 import com.smartsaldo.app.db.entities.TipoTransaccion
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import com.smartsaldo.app.databinding.DialogAddTransaccionBinding
 import java.util.*
 
 @AndroidEntryPoint

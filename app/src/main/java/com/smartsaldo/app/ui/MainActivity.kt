@@ -11,6 +11,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.ActivityMainBinding
+import com.smartsaldo.app.ads.AdManager
 
 class MainActivity : AppCompatActivity() {
 
