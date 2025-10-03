@@ -12,7 +12,20 @@
           "package_name": "com.smartsaldo.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "590560104917-qksgj4thabjcm5rkr4omjqjqfhlvjqge.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.smartsaldo.app",
+            "certificate_hash": "13c4a1c6fc5112c6c08980371d10b508e799612d"
+          }
+        },
+        {
+          "client_id": "590560104917-ju6in6ave70sib1s4fjshkndpi56bhlv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBEi4wfMlUQtBYT239lBwR9bWho8ItADDk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "590560104917-ju6in6ave70sib1s4fjshkndpi56bhlv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

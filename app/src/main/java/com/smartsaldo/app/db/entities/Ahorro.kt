@@ -46,5 +46,6 @@ data class AporteAhorro(
     val ahorroId: Long,
     val monto: Double,
     val nota: String?,
+    val usuarioId: String,
     val fecha: Long = System.currentTimeMillis()
 )

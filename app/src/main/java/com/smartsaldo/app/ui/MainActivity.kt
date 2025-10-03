@@ -1,5 +1,6 @@
 package com.smartsaldo.app.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,7 @@ import com.google.android.gms.ads.AdView
 import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.ActivityMainBinding
 import com.smartsaldo.app.ads.AdManager
+import com.smartsaldo.app.ui.auth.LoginActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -18,9 +20,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adView: AdView
     private val adManager = AdManager.getInstance()
 
-    // Agregar el ViewModel
     private val transaccionViewModel: TransaccionViewModel by viewModels()
     private val ahorroViewModel: AhorroViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +31,40 @@ class MainActivity : AppCompatActivity() {
 
         setupToolbar()
         setupAdMob()
-        inicializarUsuario() // Cambiar el orden
-        loadHomeFragment()
+        verificarAutenticacion()
         setupBottomNavigation()
+    }
+
+    private fun verificarAutenticacion() {
+        lifecycleScope.launch {
+            authViewModel.authState.collect { state ->
+                when (state) {
+                    is AuthState.Authenticated -> {
+                        // Usuario autenticado, cargar datos
+                        authViewModel.usuario.collect { usuario ->
+                            usuario?.let {
+                                transaccionViewModel.setUsuarioId(it.uid)
+                                ahorroViewModel.setUsuarioId(it.uid)
+
+                                // Cargar HomeFragment si no hay nada cargado
+                                if (supportFragmentManager.findFragmentById(R.id.fragment_container) == null) {
+                                    loadHomeFragment()
+                                }
+                            }
+                        }
+                    }
+                    is AuthState.Unauthenticated -> {
+                        // Mostrar pantalla de login
+                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    else -> {
+                        // Loading, no hacer nada
+                    }
+                }
+            }
+        }
     }
 
     private fun setupBottomNavigation() {
@@ -43,67 +76,21 @@ class MainActivity : AppCompatActivity() {
                         .commit()
                     true
                 }
-
                 R.id.nav_ahorros -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, AhorrosFragment())
                         .commit()
                     true
                 }
+                R.id.nav_profile -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, ProfileFragment())
+                        .commit()
+                    true
+                }
                 else -> false
             }
         }
-    }
-
-    private fun inicializarUsuario() {
-        lifecycleScope.launch {
-            val database = com.smartsaldo.app.db.AppDatabase.getDatabase(this@MainActivity)
-            val usuarioDao = database.usuarioDao()
-            val categoriaDao = database.categoriaDao()
-
-            // Verificar si ya existe un usuario
-            var usuario = usuarioDao.getUsuarioActivo()
-
-            if (usuario == null) {
-                // Crear usuario de prueba
-                val usuarioPrueba = com.smartsaldo.app.db.entities.Usuario(
-                    uid = "test-user-123",
-                    email = "prueba@smartsaldo.com",
-                    displayName = "Usuario de Prueba",
-                    photoURL = null,
-                    provider = "email",
-                    isActive = true
-                )
-                usuarioDao.insertOrUpdate(usuarioPrueba)
-                usuario = usuarioPrueba
-
-                // Crear categorías por defecto
-                crearCategoriasDefault(categoriaDao)
-
-                android.widget.Toast.makeText(
-                    this@MainActivity,
-                    "Usuario de prueba creado",
-                    android.widget.Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            // IMPORTANTE: Establecer el usuarioId en el ViewModel
-            transaccionViewModel.setUsuarioId(usuario.uid)
-            ahorroViewModel.setUsuarioId(usuario.uid)
-        }
-    }
-
-    private suspend fun crearCategoriasDefault(categoriaDao: com.smartsaldo.app.db.dao.CategoriaDao) {
-        val categorias = listOf(
-            com.smartsaldo.app.db.entities.Categoria(nombre = "Comida", icono = "🍔", color = "#FF5722", tipo = "GASTO", esDefault = true),
-            com.smartsaldo.app.db.entities.Categoria(nombre = "Transporte", icono = "🚗", color = "#2196F3", tipo = "GASTO", esDefault = true),
-            com.smartsaldo.app.db.entities.Categoria(nombre = "Ocio", icono = "🎮", color = "#9C27B0", tipo = "GASTO", esDefault = true),
-            com.smartsaldo.app.db.entities.Categoria(nombre = "Salud", icono = "🏥", color = "#F44336", tipo = "GASTO", esDefault = true),
-            com.smartsaldo.app.db.entities.Categoria(nombre = "Sueldo", icono = "💼", color = "#4CAF50", tipo = "INGRESO", esDefault = true),
-            com.smartsaldo.app.db.entities.Categoria(nombre = "Freelance", icono = "💻", color = "#00BCD4", tipo = "INGRESO", esDefault = true)
-        )
-
-        categoriaDao.insertCategorias(categorias)
     }
 
     private fun setupToolbar() {

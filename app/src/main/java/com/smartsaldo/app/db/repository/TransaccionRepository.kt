@@ -1,13 +1,16 @@
 package com.smartsaldo.app.db.repository
 
+import kotlinx.coroutines.tasks.await
 import com.smartsaldo.app.db.dao.EstadisticaMensual
 import com.smartsaldo.app.db.dao.TotalPorCategoria
 import com.smartsaldo.app.db.dao.TransaccionDao
 import com.smartsaldo.app.db.entities.*
 import kotlinx.coroutines.flow.Flow
 import java.util.*
+import com.google.firebase.firestore.FirebaseFirestore
 
 class TransaccionRepository(private val dao: TransaccionDao) {
+    private val firestore = FirebaseFirestore.getInstance()
 
     fun getTransacciones(usuarioId: String): Flow<List<TransaccionConCategoria>> {
         return dao.getTransaccionesConCategoria(usuarioId)
@@ -35,16 +38,51 @@ class TransaccionRepository(private val dao: TransaccionDao) {
     }
 
     suspend fun insertarTransaccion(transaccion: Transaccion): Long {
-        return dao.insertTransaccion(transaccion)
+        val id = dao.insertTransaccion(transaccion)
+
+        try {
+            firestore.collection("usuarios")
+                .document(transaccion.usuarioId)
+                .collection("transacciones")
+                .document(id.toString())
+                .set(transaccion.copy(id = id)) // aseguramos que el ID coincida
+                .await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return id
     }
 
     suspend fun actualizarTransaccion(transaccion: Transaccion) {
         val transaccionActualizada = transaccion.copy(updatedAt = System.currentTimeMillis())
         dao.updateTransaccion(transaccionActualizada)
+
+        try {
+            firestore.collection("usuarios")
+                .document(transaccion.usuarioId)
+                .collection("transacciones")
+                .document(transaccionActualizada.id.toString())
+                .set(transaccionActualizada)
+                .await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     suspend fun eliminarTransaccion(transaccion: Transaccion) {
         dao.deleteTransaccion(transaccion)
+
+        try {
+            firestore.collection("usuarios")
+                .document(transaccion.usuarioId)
+                .collection("transacciones")
+                .document(transaccion.id.toString())
+                .delete()
+                .await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     suspend fun getTransaccionPorId(id: Long): Transaccion? {

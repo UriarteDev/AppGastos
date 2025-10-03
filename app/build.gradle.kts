@@ -67,11 +67,14 @@ dependencies {
     implementation(libs.androidx.databinding.adapters)
     kapt("androidx.room:room-compiler:2.6.1")
 
-    // ✅ Firebase (CORREGIDO)
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    // Coroutines con Firebase
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
     // AdMob
     implementation("com.google.android.gms:play-services-ads:22.5.0")

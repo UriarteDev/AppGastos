@@ -63,7 +63,10 @@ class AddAporteDialog : DialogFragment() {
                 return
             }
 
-            viewModel.agregarAporte(ahorroId, monto, nota)
+            viewModel.agregarAporte(
+                ahorroId, monto, nota,
+                usuarioId = TODO(),
+            )
             dismiss()
         }
     }

@@ -3,7 +3,12 @@ package com.smartsaldo.app.db
 import android.content.Context
 import androidx.room.Room
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.smartsaldo.app.db.AppDatabase
+import com.smartsaldo.app.db.dao.AhorroDao
+import com.smartsaldo.app.db.dao.CategoriaDao
+import com.smartsaldo.app.db.dao.TransaccionDao
+import com.smartsaldo.app.db.dao.UsuarioDao
 import com.smartsaldo.app.db.repository.*
 import dagger.Module
 import dagger.Provides
@@ -36,6 +41,14 @@ object DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
     fun provideAhorroRepository(
         ahorroDao: com.smartsaldo.app.db.dao.AhorroDao
     ): AhorroRepository {
@@ -44,17 +57,16 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
-
-    @Provides
-    @Singleton
     fun provideAuthRepository(
         firebaseAuth: FirebaseAuth,
-        usuarioDao: com.smartsaldo.app.db.dao.UsuarioDao,
-        categoriaDao: com.smartsaldo.app.db.dao.CategoriaDao,
+        firestore: FirebaseFirestore,
+        usuarioDao: UsuarioDao,
+        categoriaDao: CategoriaDao,
+        transaccionDao: TransaccionDao,
+        ahorroDao: AhorroDao,
         @ApplicationContext context: Context
     ): AuthRepository {
-        return AuthRepository(firebaseAuth, usuarioDao, categoriaDao, context)
+        return AuthRepository(firebaseAuth, firestore, usuarioDao, categoriaDao, transaccionDao, ahorroDao, context)
     }
 
     @Provides

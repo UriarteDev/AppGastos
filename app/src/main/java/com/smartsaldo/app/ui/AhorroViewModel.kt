@@ -63,7 +63,7 @@ class AhorroViewModel @Inject constructor(
         }
     }
 
-    fun agregarAporte(ahorroId: Long, monto: Double, nota: String?) {
+    fun agregarAporte(ahorroId: Long, monto: Double, nota: String?, usuarioId: String) {
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true)
@@ -71,7 +71,8 @@ class AhorroViewModel @Inject constructor(
                 val aporte = AporteAhorro(
                     ahorroId = ahorroId,
                     monto = monto,
-                    nota = nota
+                    nota = nota,
+                    usuarioId = usuarioId
                 )
 
                 ahorroRepository.agregarAporte(aporte)
