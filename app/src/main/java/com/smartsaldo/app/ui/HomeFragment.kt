@@ -1,11 +1,15 @@
 package com.smartsaldo.app.ui
 
+import android.os.Build
 import android.os.Bundle
 import android.view.*
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.smartsaldo.app.R
 import kotlinx.coroutines.launch
 import com.smartsaldo.app.databinding.FragmentHomeBinding
@@ -18,8 +22,8 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
+    private val transaccionViewModel: TransaccionViewModel by activityViewModels()
     private val authViewModel: AuthViewModel by viewModels()
-    private val transaccionViewModel: TransaccionViewModel by viewModels()
 
     private lateinit var adapter: TransaccionAdapter
 
@@ -32,6 +36,7 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -39,12 +44,13 @@ class HomeFragment : Fragment() {
         setupObservers()
         setupSwipeRefresh()
         setupSearch()
+        setupFab()
     }
 
     private fun setupRecyclerView() {
         adapter = TransaccionAdapter(
             onEditClick = { transaccion ->
-                // Navegar a editar transacción
+                // TODO: Abrir edición de transacción
             },
             onDeleteClick = { transaccion ->
                 transaccionViewModel.eliminarTransaccion(transaccion.transaccion)
@@ -57,17 +63,8 @@ class HomeFragment : Fragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     private fun setupObservers() {
-        // Observar usuario actual
-        viewLifecycleOwner.lifecycleScope.launch {
-            authViewModel.usuario.collect { usuario ->
-                usuario?.let {
-                    transaccionViewModel.setUsuarioId(it.uid)
-                }
-            }
-        }
-
-        // Observar transacciones
         viewLifecycleOwner.lifecycleScope.launch {
             transaccionViewModel.transacciones.collect { transacciones ->
                 adapter.submitList(transacciones)
@@ -75,31 +72,24 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Observar estadísticas del mes
         viewLifecycleOwner.lifecycleScope.launch {
             transaccionViewModel.estadisticasDelMes.collect { estadisticas ->
                 updateResumenCard(estadisticas)
             }
         }
 
-        // Observar estado de UI
         viewLifecycleOwner.lifecycleScope.launch {
             transaccionViewModel.uiState.collect { state ->
                 binding.swipeRefresh.isRefreshing = state.isLoading
 
                 state.message?.let { message ->
-                    // Mostrar Snackbar
-                    com.google.android.material.snackbar.Snackbar
-                        .make(binding.root, message, com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
-                        .show()
+                    Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
                     transaccionViewModel.limpiarMensaje()
                 }
 
                 state.error?.let { error ->
-                    // Mostrar error
-                    com.google.android.material.snackbar.Snackbar
-                        .make(binding.root, error, com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
-                        .setAction("Reintentar") { /* acción de reintento */ }
+                    Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG)
+                        .setAction("Reintentar") { }
                         .show()
                     transaccionViewModel.limpiarMensaje()
                 }
@@ -109,13 +99,13 @@ class HomeFragment : Fragment() {
 
     private fun setupSwipeRefresh() {
         binding.swipeRefresh.setOnRefreshListener {
-            // Recargar datos
             binding.swipeRefresh.isRefreshing = false
         }
     }
 
     private fun setupSearch() {
-        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+        binding.searchView.setOnQueryTextListener(object :
+            androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let { transaccionViewModel.buscar(it) }
                 return true
@@ -130,6 +120,14 @@ class HomeFragment : Fragment() {
         })
     }
 
+    private fun setupFab() {
+        binding.fabAddTransaccion.setOnClickListener {
+            val dialog = AddTransaccionDialog()
+            dialog.show(childFragmentManager, "AddTransaccionDialog")
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
     private fun updateResumenCard(estadisticas: EstadisticaMensual?) {
         if (estadisticas != null) {
             binding.apply {
@@ -137,7 +135,6 @@ class HomeFragment : Fragment() {
                 tvTotalGastos.text = "S/ ${String.format("%.2f", estadisticas.totalGastos)}"
                 tvSaldoDisponible.text = "S/ ${String.format("%.2f", estadisticas.saldo)}"
 
-                // Cambiar color según si es positivo o negativo
                 val colorSaldo = if (estadisticas.saldo >= 0) {
                     R.color.green_500
                 } else {

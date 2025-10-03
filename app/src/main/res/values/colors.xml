@@ -17,4 +17,6 @@
     <color name="colorOnPrimaryDark">#000000</color> <!-- Texto oscuro sobre azul claro -->
     <color name="colorAccentDark">#FFB74D</color> <!-- Naranja claro -->
     <color name="textColorDark">#E0E0E0</color> <!-- Texto gris claro -->
+    <color name="green_500">#4CAF50</color>
+    <color name="red_500">#F44336</color>
 </resources>

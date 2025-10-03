@@ -13,8 +13,8 @@ import com.smartsaldo.app.db.entities.*
 import com.smartsaldo.app.db.entities.Usuario
 
 @Database(
-    entities = [Usuario::class, Categoria::class, Transaccion::class],
-    version = 4,
+    entities = [Usuario::class, Categoria::class, Transaccion::class, Ahorro::class, AporteAhorro::class],
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -23,56 +23,40 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun usuarioDao(): UsuarioDao
     abstract fun categoriaDao(): CategoriaDao
     abstract fun transaccionDao(): TransaccionDao
+    abstract fun ahorroDao(): AhorroDao
 
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // Migración de versión 3 a 4
-        val MIGRATION_3_4 = object : Migration(3, 4) {
+        val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // Crear tabla categorias
                 database.execSQL("""
-                    CREATE TABLE IF NOT EXISTS `categorias` (
+                    CREATE TABLE IF NOT EXISTS `ahorros` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `nombre` TEXT NOT NULL,
-                        `icono` TEXT NOT NULL,
-                        `color` TEXT NOT NULL,
-                        `tipo` TEXT NOT NULL,
-                        `esDefault` INTEGER NOT NULL,
-                        `usuarioId` TEXT
-                    )
-                """)
-
-                // Crear tabla transacciones
-                database.execSQL("""
-                    CREATE TABLE IF NOT EXISTS `transacciones` (
-                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        `monto` REAL NOT NULL,
-                        `descripcion` TEXT NOT NULL,
-                        `notas` TEXT,
-                        `fecha` INTEGER NOT NULL,
-                        `categoriaId` INTEGER NOT NULL,
+                        `metaMonto` REAL NOT NULL,
+                        `montoActual` REAL NOT NULL,
                         `usuarioId` TEXT NOT NULL,
-                        `tipo` TEXT NOT NULL,
                         `createdAt` INTEGER NOT NULL,
                         `updatedAt` INTEGER NOT NULL,
-                        FOREIGN KEY(`usuarioId`) REFERENCES `usuarios`(`uid`) ON DELETE CASCADE,
-                        FOREIGN KEY(`categoriaId`) REFERENCES `categorias`(`id`) ON DELETE RESTRICT
+                        FOREIGN KEY(`usuarioId`) REFERENCES `usuarios`(`uid`) ON DELETE CASCADE
                     )
                 """)
 
-                // Actualizar tabla usuarios
-                database.execSQL("ALTER TABLE usuarios ADD COLUMN provider TEXT DEFAULT 'email'")
-                database.execSQL("ALTER TABLE usuarios ADD COLUMN photoURL TEXT")
-                database.execSQL("ALTER TABLE usuarios ADD COLUMN isActive INTEGER DEFAULT 1")
-
-                // Migrar datos de movimientos a transacciones
                 database.execSQL("""
-                    INSERT INTO transacciones (monto, descripcion, fecha, categoriaId, usuarioId, tipo, createdAt, updatedAt)
-                    SELECT monto, COALESCE(nombre, 'Transacción'), fecha, 1, '1', tipo, fecha, fecha
-                    FROM movimientos
+                    CREATE TABLE IF NOT EXISTS `aportes_ahorro` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `ahorroId` INTEGER NOT NULL,
+                        `monto` REAL NOT NULL,
+                        `nota` TEXT,
+                        `fecha` INTEGER NOT NULL,
+                        FOREIGN KEY(`ahorroId`) REFERENCES `ahorros`(`id`) ON DELETE CASCADE
+                    )
                 """)
+
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_ahorros_usuarioId` ON `ahorros` (`usuarioId`)")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_aportes_ahorro_ahorroId` ON `aportes_ahorro` (`ahorroId`)")
             }
         }
 
@@ -83,8 +67,8 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "smartsaldo_db"
                 )
-                    .addMigrations(MIGRATION_3_4)
-                    .fallbackToDestructiveMigration() // Solo para desarrollo
+                    .addMigrations(MIGRATION_4_5)
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

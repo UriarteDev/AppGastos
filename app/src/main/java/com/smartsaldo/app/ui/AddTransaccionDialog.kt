@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.smartsaldo.app.db.entities.Categoria
 import com.smartsaldo.app.db.entities.TipoTransaccion
@@ -16,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import com.smartsaldo.app.databinding.DialogAddTransaccionBinding
 import java.util.*
+import androidx.fragment.app.activityViewModels
 
 @AndroidEntryPoint
 class AddTransaccionDialog : DialogFragment() {
@@ -23,7 +23,8 @@ class AddTransaccionDialog : DialogFragment() {
     private var _binding: DialogAddTransaccionBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: TransaccionViewModel by viewModels({ requireParentFragment() })
+    // Cambiar a activityViewModels en lugar de viewModels({ requireParentFragment() })
+    private val viewModel: TransaccionViewModel by activityViewModels()
 
     private var fechaSeleccionada = Calendar.getInstance()
     private var categorias: List<Categoria> = emptyList()

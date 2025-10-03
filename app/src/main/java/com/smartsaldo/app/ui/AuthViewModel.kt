@@ -7,8 +7,13 @@ import com.smartsaldo.app.db.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import dagger.hilt.android.lifecycle.HiltViewModel
 
-class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState
@@ -24,10 +29,6 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         val currentUser = authRepository.getCurrentUser()
         if (currentUser != null) {
             _authState.value = AuthState.Authenticated
-            // Cargar datos del usuario desde Room
-            viewModelScope.launch {
-                // implementar carga de usuario
-            }
         } else {
             _authState.value = AuthState.Unauthenticated
         }
@@ -82,8 +83,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     fun resetPassword(email: String) {
         viewModelScope.launch {
-            val result = authRepository.resetPassword(email)
-            // Manejar resultado
+            authRepository.resetPassword(email)
         }
     }
 }

@@ -32,6 +32,17 @@ object DatabaseModule {
     fun provideTransaccionDao(database: AppDatabase) = database.transaccionDao()
 
     @Provides
+    fun provideAhorroDao(database: AppDatabase) = database.ahorroDao()
+
+    @Provides
+    @Singleton
+    fun provideAhorroRepository(
+        ahorroDao: com.smartsaldo.app.db.dao.AhorroDao
+    ): AhorroRepository {
+        return AhorroRepository(ahorroDao)
+    }
+
+    @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 

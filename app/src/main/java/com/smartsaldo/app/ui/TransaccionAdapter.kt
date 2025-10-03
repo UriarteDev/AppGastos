@@ -44,13 +44,11 @@ class TransaccionAdapter(
             val categoria = transaccionConCategoria.categoria
 
             binding.apply {
-                // Información básica
                 tvDescripcion.text = transaccion.descripcion
-                tvCategoria.text = categoria.nombre
+                tvCategoria.text = categoria?.nombre ?: "Sin categoría" // Línea 49 corregida
                 tvFecha.text = dateFormat.format(Date(transaccion.fecha))
                 tvHora.text = timeFormat.format(Date(transaccion.fecha))
 
-                // Monto con color según tipo
                 val montoTexto = "S/ ${String.format("%.2f", transaccion.monto)}"
                 when (transaccion.tipo) {
                     TipoTransaccion.INGRESO -> {
@@ -63,15 +61,14 @@ class TransaccionAdapter(
                     }
                 }
 
-                // Color de categoría
+                // Línea 68 corregida
                 try {
-                    val colorCategoria = Color.parseColor(categoria.color)
+                    val colorCategoria = Color.parseColor(categoria?.color ?: "#808080")
                     viewColorCategoria.setBackgroundColor(colorCategoria)
                 } catch (e: Exception) {
                     viewColorCategoria.setBackgroundColor(Color.GRAY)
                 }
 
-                // Notas (opcional)
                 if (!transaccion.notas.isNullOrBlank()) {
                     tvNotas.text = transaccion.notas
                     tvNotas.visibility = android.view.View.VISIBLE
@@ -79,7 +76,6 @@ class TransaccionAdapter(
                     tvNotas.visibility = android.view.View.GONE
                 }
 
-                // Click listeners
                 root.setOnClickListener { onEditClick(transaccionConCategoria) }
                 btnEliminar.setOnClickListener { onDeleteClick(transaccionConCategoria) }
             }

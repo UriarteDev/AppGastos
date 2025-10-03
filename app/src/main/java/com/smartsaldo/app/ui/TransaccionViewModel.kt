@@ -9,9 +9,11 @@ import kotlinx.coroutines.launch
 import java.util.*
 import com.smartsaldo.app.db.repository.CategoriaRepository
 import com.smartsaldo.app.db.dao.EstadisticaMensual
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Collections.emptyList
 import javax.inject.Inject
 
+@HiltViewModel
 class TransaccionViewModel @Inject constructor(
     private val transaccionRepository: TransaccionRepository,
     private val categoriaRepository: CategoriaRepository
@@ -35,26 +37,19 @@ class TransaccionViewModel @Inject constructor(
         _mesSeleccionado,
         _anoSeleccionado
     ) { usuarioId, filtro, categoria, mes, ano ->
-        if (usuarioId == null) return@combine emptyList()
+        if (usuarioId == null) return@combine flowOf(emptyList())
 
         when {
-            filtro.isNotBlank() -> {
-                transaccionRepository.buscarTransacciones(usuarioId, filtro)
-            }
-            categoria != null -> {
-                transaccionRepository.getTransaccionesPorCategoria(usuarioId, categoria)
-            }
-            else -> {
-                transaccionRepository.getTransaccionesDelMes(usuarioId, ano, mes)
-            }
+            filtro.isNotBlank() -> transaccionRepository.buscarTransacciones(usuarioId, filtro)
+            categoria != null -> transaccionRepository.getTransaccionesPorCategoria(usuarioId, categoria)
+            else -> transaccionRepository.getTransaccionesDelMes(usuarioId, ano, mes)
         }
-    }.flatMapLatest { flow ->
-        flow
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+    }.flatMapLatest { it } // Cambio aquí
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     // ✅ Categorías disponibles
     val categorias: StateFlow<List<Categoria>> = _usuarioId.flatMapLatest { usuarioId ->
@@ -77,24 +72,23 @@ class TransaccionViewModel @Inject constructor(
     ) { usuarioId, mes, ano ->
         if (usuarioId != null) {
             transaccionRepository.getTransaccionesDelMes(usuarioId, ano, mes)
-                .map { transacciones ->
-                    val ingresos = transacciones.filter { it.transaccion.tipo == TipoTransaccion.INGRESO }
-                        .sumOf { it.transaccion.monto }
-                    val gastos = transacciones.filter { it.transaccion.tipo == TipoTransaccion.GASTO }
-                        .sumOf { it.transaccion.monto }
-
-                    EstadisticaMensual(
-                        mes = "${ano}-${mes + 1}",
-                        totalIngresos = ingresos,
-                        totalGastos = gastos,
-                        totalTransacciones = transacciones.size
-                    )
-                }
         } else {
-            flowOf(null)
+            flowOf(emptyList())
         }
     }.flatMapLatest { flow ->
-        flow
+        flow.map { transacciones ->
+            val ingresos = transacciones.filter { it.transaccion.tipo == TipoTransaccion.INGRESO }
+                .sumOf { it.transaccion.monto }
+            val gastos = transacciones.filter { it.transaccion.tipo == TipoTransaccion.GASTO }
+                .sumOf { it.transaccion.monto }
+
+            EstadisticaMensual(
+                mes = "${_anoSeleccionado.value}-${_mesSeleccionado.value + 1}",
+                totalIngresos = ingresos,
+                totalGastos = gastos,
+                totalTransacciones = transacciones.size
+            )
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
