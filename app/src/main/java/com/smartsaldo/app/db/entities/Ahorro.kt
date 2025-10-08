@@ -36,9 +36,18 @@ data class Ahorro(
             parentColumns = ["id"],
             childColumns = ["ahorroId"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = Usuario::class,
+            parentColumns = ["uid"],
+            childColumns = ["usuarioId"],
+            onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["ahorroId"])]
+    indices = [
+        Index(value = ["ahorroId"]),
+        Index(value = ["usuarioId"])
+    ]
 )
 data class AporteAhorro(
     @PrimaryKey(autoGenerate = true)

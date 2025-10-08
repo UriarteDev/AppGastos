@@ -1,6 +1,5 @@
 package com.smartsaldo.app.ui
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -9,7 +8,6 @@ import com.google.android.gms.ads.AdView
 import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.ActivityMainBinding
 import com.smartsaldo.app.ads.AdManager
-import com.smartsaldo.app.ui.auth.LoginActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -31,36 +29,20 @@ class MainActivity : AppCompatActivity() {
 
         setupToolbar()
         setupAdMob()
-        verificarAutenticacion()
         setupBottomNavigation()
+        cargarDatosUsuario()
     }
 
-    private fun verificarAutenticacion() {
+    private fun cargarDatosUsuario() {
         lifecycleScope.launch {
-            authViewModel.authState.collect { state ->
-                when (state) {
-                    is AuthState.Authenticated -> {
-                        // Usuario autenticado, cargar datos
-                        authViewModel.usuario.collect { usuario ->
-                            usuario?.let {
-                                transaccionViewModel.setUsuarioId(it.uid)
-                                ahorroViewModel.setUsuarioId(it.uid)
+            authViewModel.usuario.collect { usuario ->
+                usuario?.let {
+                    transaccionViewModel.setUsuarioId(it.uid)
+                    ahorroViewModel.setUsuarioId(it.uid)
 
-                                // Cargar HomeFragment si no hay nada cargado
-                                if (supportFragmentManager.findFragmentById(R.id.fragment_container) == null) {
-                                    loadHomeFragment()
-                                }
-                            }
-                        }
-                    }
-                    is AuthState.Unauthenticated -> {
-                        // Mostrar pantalla de login
-                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
-                    else -> {
-                        // Loading, no hacer nada
+                    // Cargar HomeFragment solo si no hay nada cargado
+                    if (supportFragmentManager.findFragmentById(R.id.fragment_container) == null) {
+                        loadHomeFragment()
                     }
                 }
             }
@@ -110,17 +92,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        adView.pause()
+        if (::adView.isInitialized) {
+            adView.pause()
+        }
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        adView.resume()
+        if (::adView.isInitialized) {
+            adView.resume()
+        }
     }
 
     override fun onDestroy() {
-        adView.destroy()
+        if (::adView.isInitialized) {
+            adView.destroy()
+        }
         super.onDestroy()
     }
 }

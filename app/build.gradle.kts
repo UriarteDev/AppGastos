@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-android")
     id("kotlin-kapt")
-    alias(libs.plugins.google.services) // Agregar esta línea
+    alias(libs.plugins.google.services)
     id("com.google.dagger.hilt.android")
 }
 
@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.smartsaldo.app"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -68,19 +68,24 @@ dependencies {
     kapt("androidx.room:room-compiler:2.6.1")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
     // Coroutines con Firebase
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
-    // AdMob
-    implementation("com.google.android.gms:play-services-ads:22.5.0")
+    // AdMob - Versión actualizada
+    implementation("com.google.android.gms:play-services-ads:23.1.0")
 
     // Charts
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // Glide para cargar imágenes
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
 
     // Dependency Injection
     implementation("com.google.dagger:hilt-android:2.48.1")

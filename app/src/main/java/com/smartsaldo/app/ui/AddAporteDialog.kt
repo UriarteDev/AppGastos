@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.smartsaldo.app.databinding.DialogAddAporteBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AddAporteDialog : DialogFragment() {
@@ -15,7 +17,9 @@ class AddAporteDialog : DialogFragment() {
     private var _binding: DialogAddAporteBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: AhorroViewModel by activityViewModels()
+    private val ahorroViewModel: AhorroViewModel by activityViewModels()
+    private val authViewModel: AuthViewModel by activityViewModels()
+
     private var ahorroId: Long = 0
 
     companion object {
@@ -63,11 +67,22 @@ class AddAporteDialog : DialogFragment() {
                 return
             }
 
-            viewModel.agregarAporte(
-                ahorroId, monto, nota,
-                usuarioId = TODO(),
-            )
-            dismiss()
+            // Obtener el usuarioId del AuthViewModel
+            viewLifecycleOwner.lifecycleScope.launch {
+                authViewModel.usuario.collect { usuario ->
+                    if (usuario != null) {
+                        ahorroViewModel.agregarAporte(
+                            ahorroId = ahorroId,
+                            monto = monto,
+                            nota = nota,
+                            usuarioId = usuario.uid
+                        )
+                        dismiss()
+                    } else {
+                        etMonto.error = "Error: Usuario no autenticado"
+                    }
+                }
+            }
         }
     }
 

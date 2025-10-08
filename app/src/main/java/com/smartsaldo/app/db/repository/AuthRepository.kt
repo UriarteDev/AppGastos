@@ -27,7 +27,7 @@ class AuthRepository(
 
     private val googleSignInClient: GoogleSignInClient by lazy {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("590560104917-ju6in6ave70sib1s4fjshkndpi56bhlv.apps.googleusercontent.com") // Reemplazar con tu Web Client ID
+            .requestIdToken("590560104917-ju6in6ave70sib1s4fjshkndpi56bhlv.apps.googleusercontent.com")
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
@@ -49,7 +49,6 @@ class AuthRepository(
                 isActive = true
             )
 
-            // Guardar localmente
             usuarioDao.deactivateAllUsers()
             usuarioDao.insertOrUpdate(usuario)
 
@@ -58,6 +57,7 @@ class AuthRepository(
 
             Result.success(usuario)
         } catch (e: Exception) {
+            android.util.Log.e("AuthRepository", "Error en signInWithEmail", e)
             Result.failure(e)
         }
     }
@@ -81,15 +81,17 @@ class AuthRepository(
                 isActive = true
             )
 
-            // Guardar localmente
             usuarioDao.deactivateAllUsers()
             usuarioDao.insertOrUpdate(usuario)
 
-            // Crear categorías predefinidas
             crearCategoriasDefault(usuario.uid)
 
-            // Guardar en Firestore
-            guardarUsuarioEnFirestore(usuario)
+            // Intentar guardar en Firestore (no bloquear si falla)
+            try {
+                guardarUsuarioEnFirestore(usuario)
+            } catch (e: Exception) {
+                android.util.Log.w("AuthRepository", "No se pudo guardar en Firestore: ${e.message}")
+            }
 
             Result.success(usuario)
         } catch (e: Exception) {
@@ -97,14 +99,9 @@ class AuthRepository(
         }
     }
 
-    suspend fun signInWithGoogle(): Result<Usuario> {
+    suspend fun signInWithGoogle(idToken: String): Result<Usuario> {
         return try {
-            val googleSignInAccount = GoogleSignIn.getLastSignedInAccount(context)
-                ?: throw Exception("No hay cuenta de Google")
-
-            val idToken = googleSignInAccount.idToken ?: throw Exception("Token nulo")
             val credential = GoogleAuthProvider.getCredential(idToken, null)
-
             val result = firebaseAuth.signInWithCredential(credential).await()
             val firebaseUser = result.user ?: throw Exception("Usuario nulo")
 
@@ -122,16 +119,27 @@ class AuthRepository(
             usuarioDao.insertOrUpdate(usuario)
 
             if (result.additionalUserInfo?.isNewUser == true) {
-                // Usuario nuevo
+                // Usuario nuevo - crear categorías primero
                 crearCategoriasDefault(usuario.uid)
-                guardarUsuarioEnFirestore(usuario)
+
+                // Intentar guardar en Firestore (no bloquear si falla)
+                try {
+                    guardarUsuarioEnFirestore(usuario)
+                } catch (e: Exception) {
+                    android.util.Log.w("AuthRepository", "No se pudo guardar en Firestore: ${e.message}")
+                }
             } else {
-                // Usuario existente, sincronizar desde Firestore
-                sincronizarDesdeFirestore(firebaseUser.uid)
+                // Usuario existente, intentar sincronizar desde Firestore
+                try {
+                    sincronizarDesdeFirestore(firebaseUser.uid)
+                } catch (e: Exception) {
+                    android.util.Log.w("AuthRepository", "No se pudo sincronizar desde Firestore: ${e.message}")
+                }
             }
 
             Result.success(usuario)
         } catch (e: Exception) {
+            e.printStackTrace()
             Result.failure(e)
         }
     }
@@ -150,8 +158,6 @@ class AuthRepository(
             Result.failure(e)
         }
     }
-
-    // ===== SINCRONIZACIÓN CON FIRESTORE =====
 
     private suspend fun guardarUsuarioEnFirestore(usuario: Usuario) {
         firestore.collection("usuarios")
@@ -190,7 +196,7 @@ class AuthRepository(
             }
             batch.commit().await()
         } catch (e: Exception) {
-            // Log error
+            e.printStackTrace()
         }
     }
 
@@ -215,13 +221,12 @@ class AuthRepository(
             }
             batch.commit().await()
         } catch (e: Exception) {
-            // Log error
+            e.printStackTrace()
         }
     }
 
     private suspend fun sincronizarDesdeFirestore(usuarioId: String) {
         try {
-            // Sincronizar transacciones
             val transaccionesSnapshot = firestore.collection("usuarios")
                 .document(usuarioId)
                 .collection("transacciones")
@@ -244,7 +249,6 @@ class AuthRepository(
                 transaccionDao.insertTransaccion(transaccion)
             }
 
-            // Sincronizar ahorros
             val ahorrosSnapshot = firestore.collection("usuarios")
                 .document(usuarioId)
                 .collection("ahorros")
@@ -264,7 +268,7 @@ class AuthRepository(
                 ahorroDao.insertAhorro(ahorro)
             }
         } catch (e: Exception) {
-            // Log error
+            e.printStackTrace()
         }
     }
 

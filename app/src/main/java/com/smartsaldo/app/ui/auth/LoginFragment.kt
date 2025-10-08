@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.android.material.snackbar.Snackbar
 import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.DialogRecuperarPasswordBinding
@@ -32,27 +33,66 @@ class LoginFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val authViewModel: AuthViewModel by viewModels()
-
-    // 👇 Cliente de Google declarado aquí
     private var googleSignInClient: GoogleSignInClient? = null
 
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
+        android.util.Log.d("LoginFragment", "Google Sign-In result: ${result.resultCode}")
+
         if (result.resultCode == Activity.RESULT_OK) {
-            authViewModel.signInWithGoogle()
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+
+                android.util.Log.d("LoginFragment", "Token obtenido: ${idToken != null}")
+
+                if (idToken != null) {
+                    // Pasar el token al ViewModel
+                    authViewModel.signInWithGoogle(idToken)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "No se pudo obtener el token de Google",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    binding.progressBar.visibility = View.GONE
+                    binding.btnLogin.isEnabled = true
+                    binding.btnGoogleSignIn.isEnabled = true
+                }
+            } catch (e: ApiException) {
+                android.util.Log.e("LoginFragment", "Error de Google Sign-In", e)
+                Toast.makeText(
+                    requireContext(),
+                    "Error de Google Sign-In: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                binding.progressBar.visibility = View.GONE
+                binding.btnLogin.isEnabled = true
+                binding.btnGoogleSignIn.isEnabled = true
+            }
         } else {
-            Toast.makeText(requireContext(), "Inicio de sesión cancelado", Toast.LENGTH_SHORT).show()
+            android.util.Log.d("LoginFragment", "Login cancelado por el usuario")
+            Toast.makeText(
+                requireContext(),
+                "Inicio de sesión cancelado",
+                Toast.LENGTH_SHORT
+            ).show()
+            binding.progressBar.visibility = View.GONE
+            binding.btnLogin.isEnabled = true
+            binding.btnGoogleSignIn.isEnabled = true
         }
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
 
-        // 👇 Inicializamos el cliente una sola vez
+        // Inicializar Google Sign-In Client
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -104,13 +144,21 @@ class LoginFragment : Fragment() {
     }
 
     private fun iniciarGoogleSignIn() {
-        val signInIntent = googleSignInClient?.signInIntent
-        if (signInIntent != null) {
-            googleSignInLauncher.launch(signInIntent)
-        } else {
-            Toast.makeText(requireContext(), "Error inicializando Google Sign-In", Toast.LENGTH_SHORT).show()
+        // Cerrar sesión previa para forzar selección de cuenta
+        googleSignInClient?.signOut()?.addOnCompleteListener {
+            val signInIntent = googleSignInClient?.signInIntent
+            if (signInIntent != null) {
+                googleSignInLauncher.launch(signInIntent)
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Error inicializando Google Sign-In",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
+
     private fun observeAuthState() {
         viewLifecycleOwner.lifecycleScope.launch {
             authViewModel.authState.collect { state ->
@@ -122,9 +170,15 @@ class LoginFragment : Fragment() {
                     }
                     is AuthState.Authenticated -> {
                         binding.progressBar.visibility = View.GONE
+
+                        // Esperar un momento para asegurar que todo se guarde
+                        kotlinx.coroutines.delay(500)
+
+                        // Navegar a MainActivity
                         val intent = Intent(requireContext(), MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
+                        requireActivity().finish()
                     }
                     is AuthState.Unauthenticated -> {
                         binding.progressBar.visibility = View.GONE
@@ -158,7 +212,11 @@ class LoginFragment : Fragment() {
 
             authViewModel.resetPassword(email)
             dialog.dismiss()
-            Snackbar.make(binding.root, "Email de recuperación enviado", Snackbar.LENGTH_LONG).show()
+            Snackbar.make(
+                binding.root,
+                "Email de recuperación enviado",
+                Snackbar.LENGTH_LONG
+            ).show()
         }
 
         dialogBinding.btnCancelar.setOnClickListener {
@@ -168,7 +226,6 @@ class LoginFragment : Fragment() {
         dialog.show()
     }
 
-    // 👇 Cerramos el cliente para liberar el canal
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
