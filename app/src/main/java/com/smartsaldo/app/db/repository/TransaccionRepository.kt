@@ -29,6 +29,10 @@ class TransaccionRepository(private val dao: TransaccionDao) {
         return dao.getTransaccionesPorFecha(usuarioId, inicioMes, finMes)
     }
 
+    fun getTransaccionesPorFecha(usuarioId: String, fechaInicio: Long, fechaFin: Long): Flow<List<TransaccionConCategoria>> {
+        return dao.getTransaccionesPorFecha(usuarioId, fechaInicio, fechaFin)
+    }
+
     fun buscarTransacciones(usuarioId: String, busqueda: String): Flow<List<TransaccionConCategoria>> {
         return dao.buscarTransacciones(usuarioId, busqueda)
     }
@@ -45,10 +49,10 @@ class TransaccionRepository(private val dao: TransaccionDao) {
                 .document(transaccion.usuarioId)
                 .collection("transacciones")
                 .document(id.toString())
-                .set(transaccion.copy(id = id)) // aseguramos que el ID coincida
+                .set(transaccion.copy(id = id))
                 .await()
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("TransaccionRepository", "Error guardando en Firestore", e)
         }
 
         return id
@@ -66,7 +70,7 @@ class TransaccionRepository(private val dao: TransaccionDao) {
                 .set(transaccionActualizada)
                 .await()
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("TransaccionRepository", "Error actualizando en Firestore", e)
         }
     }
 
@@ -81,7 +85,7 @@ class TransaccionRepository(private val dao: TransaccionDao) {
                 .delete()
                 .await()
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("TransaccionRepository", "Error eliminando de Firestore", e)
         }
     }
 

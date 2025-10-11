@@ -58,6 +58,12 @@ class MainActivity : AppCompatActivity() {
                         .commit()
                     true
                 }
+                R.id.nav_stats -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, EstadisticasFragment())
+                        .commit()
+                    true
+                }
                 R.id.nav_ahorros -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, AhorrosFragment())

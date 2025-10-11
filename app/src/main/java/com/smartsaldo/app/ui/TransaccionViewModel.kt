@@ -63,7 +63,54 @@ class TransaccionViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
+// Métodos adicionales para EstadisticasFragment
 
+    fun getTotalPorMes(year: Int, month: Int): Flow<List<Transaccion>> {
+        val usuarioId = _usuarioId.value ?: return flowOf(emptyList())
+
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, 1, 0, 0, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val inicioMes = calendar.timeInMillis
+
+        calendar.add(Calendar.MONTH, 1)
+        calendar.add(Calendar.MILLISECOND, -1)
+        val finMes = calendar.timeInMillis
+
+        return transaccionRepository.getTransaccionesPorFecha(usuarioId, inicioMes, finMes)
+            .map { list -> list.map { it.transaccion } }
+    }
+
+    fun getTotalPorFecha(year: Int, month: Int, day: Int): Flow<List<Transaccion>> {
+        val usuarioId = _usuarioId.value ?: return flowOf(emptyList())
+
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, day, 0, 0, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val inicioFecha = calendar.timeInMillis
+
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        calendar.add(Calendar.MILLISECOND, -1)
+        val finFecha = calendar.timeInMillis
+
+        return transaccionRepository.getTransaccionesPorFecha(usuarioId, inicioFecha, finFecha)
+            .map { list -> list.map { it.transaccion } }
+    }
+
+    fun getTotalPorAño(year: Int): Flow<List<Transaccion>> {
+        val usuarioId = _usuarioId.value ?: return flowOf(emptyList())
+
+        val calendar = Calendar.getInstance()
+        calendar.set(year, 0, 1, 0, 0, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val inicioAño = calendar.timeInMillis
+
+        calendar.set(year, 11, 31, 23, 59, 59)
+        val finAño = calendar.timeInMillis
+
+        return transaccionRepository.getTransaccionesPorFecha(usuarioId, inicioAño, finAño)
+            .map { list -> list.map { it.transaccion } }
+    }
     // ✅ Estadísticas del mes actual
     val estadisticasDelMes: StateFlow<EstadisticaMensual?> = combine(
         _usuarioId,

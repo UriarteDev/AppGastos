@@ -10,7 +10,6 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.smartsaldo.app.db.dao.*
 import com.smartsaldo.app.db.entities.*
-import com.smartsaldo.app.db.entities.Usuario
 
 @Database(
     entities = [Usuario::class, Categoria::class, Transaccion::class, Ahorro::class, AporteAhorro::class],
@@ -31,7 +30,8 @@ abstract class AppDatabase : RoomDatabase() {
 
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("""
+                database.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS `ahorros` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `nombre` TEXT NOT NULL,
@@ -42,9 +42,11 @@ abstract class AppDatabase : RoomDatabase() {
                         `updatedAt` INTEGER NOT NULL,
                         FOREIGN KEY(`usuarioId`) REFERENCES `usuarios`(`uid`) ON DELETE CASCADE
                     )
-                """)
+                """
+                )
 
-                database.execSQL("""
+                database.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS `aportes_ahorro` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `ahorroId` INTEGER NOT NULL,
@@ -53,7 +55,8 @@ abstract class AppDatabase : RoomDatabase() {
                         `fecha` INTEGER NOT NULL,
                         FOREIGN KEY(`ahorroId`) REFERENCES `ahorros`(`id`) ON DELETE CASCADE
                     )
-                """)
+                """
+                )
 
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_ahorros_usuarioId` ON `ahorros` (`usuarioId`)")
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_aportes_ahorro_ahorroId` ON `aportes_ahorro` (`ahorroId`)")
@@ -63,7 +66,8 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 // Agregar columna usuarioId a aportes_ahorro
-                database.execSQL("""
+                database.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS `aportes_ahorro_new` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         `ahorroId` INTEGER NOT NULL,
@@ -74,16 +78,19 @@ abstract class AppDatabase : RoomDatabase() {
                         FOREIGN KEY(`ahorroId`) REFERENCES `ahorros`(`id`) ON DELETE CASCADE,
                         FOREIGN KEY(`usuarioId`) REFERENCES `usuarios`(`uid`) ON DELETE CASCADE
                     )
-                """)
+                """
+                )
 
-                // Copiar datos existentes (si hay alguno, usar un usuarioId temporal)
-                database.execSQL("""
+                // Copiar datos existentes
+                database.execSQL(
+                    """
                     INSERT INTO `aportes_ahorro_new` (`id`, `ahorroId`, `monto`, `nota`, `usuarioId`, `fecha`)
                     SELECT `id`, `ahorroId`, `monto`, `nota`, 
                            (SELECT `usuarioId` FROM `ahorros` WHERE `ahorros`.`id` = `aportes_ahorro`.`ahorroId` LIMIT 1),
                            `fecha`
                     FROM `aportes_ahorro`
-                """)
+                """
+                )
 
                 // Eliminar tabla vieja
                 database.execSQL("DROP TABLE `aportes_ahorro`")
