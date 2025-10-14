@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.smartsaldo.app.R
 import kotlinx.coroutines.launch
@@ -50,10 +51,20 @@ class HomeFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = TransaccionAdapter(
             onEditClick = { transaccion ->
-                // TODO: Abrir edición de transacción
+                // CAMBIO: Abrir diálogo de edición en lugar de solo editar
+                val dialog = EditTransaccionDialog.newInstance(transaccion)
+                dialog.show(childFragmentManager, "EditTransaccionDialog")
             },
             onDeleteClick = { transaccion ->
-                transaccionViewModel.eliminarTransaccion(transaccion.transaccion)
+                // Agregar confirmación antes de eliminar
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Eliminar transacción")
+                    .setMessage("¿Estás seguro de que deseas eliminar '${transaccion.transaccion.descripcion}'?")
+                    .setPositiveButton("Eliminar") { _, _ ->
+                        transaccionViewModel.eliminarTransaccion(transaccion.transaccion)
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
             }
         )
 

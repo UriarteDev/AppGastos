@@ -1,5 +1,7 @@
 package com.smartsaldo.app.ui
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -25,7 +27,7 @@ class TransaccionAdapter(
     }
 
     override fun onBindViewHolder(holder: TransaccionViewHolder, position: Int) {
-        holder.bind(getItem(position), onEditClick, onDeleteClick)
+        holder.bind(getItem(position), onEditClick, onDeleteClick, position)
     }
 
     class TransaccionViewHolder(
@@ -38,14 +40,15 @@ class TransaccionAdapter(
         fun bind(
             transaccionConCategoria: TransaccionConCategoria,
             onEditClick: (TransaccionConCategoria) -> Unit,
-            onDeleteClick: (TransaccionConCategoria) -> Unit
+            onDeleteClick: (TransaccionConCategoria) -> Unit,
+            position: Int
         ) {
             val transaccion = transaccionConCategoria.transaccion
             val categoria = transaccionConCategoria.categoria
 
             binding.apply {
                 tvDescripcion.text = transaccion.descripcion
-                tvCategoria.text = categoria?.nombre ?: "Sin categoría" // Línea 49 corregida
+                tvCategoria.text = categoria?.nombre ?: "Sin categoría"
                 tvFecha.text = dateFormat.format(Date(transaccion.fecha))
                 tvHora.text = timeFormat.format(Date(transaccion.fecha))
 
@@ -61,7 +64,6 @@ class TransaccionAdapter(
                     }
                 }
 
-                // Línea 68 corregida
                 try {
                     val colorCategoria = Color.parseColor(categoria?.color ?: "#808080")
                     viewColorCategoria.setBackgroundColor(colorCategoria)
@@ -76,8 +78,68 @@ class TransaccionAdapter(
                     tvNotas.visibility = android.view.View.GONE
                 }
 
-                root.setOnClickListener { onEditClick(transaccionConCategoria) }
-                btnEliminar.setOnClickListener { onDeleteClick(transaccionConCategoria) }
+                root.setOnClickListener {
+                    animarPulso {
+                        onEditClick(transaccionConCategoria)
+                    }
+                }
+
+                btnEliminar.setOnClickListener {
+                    animarEliminacion {
+                        onDeleteClick(transaccionConCategoria)
+                    }
+                }
+
+                animarEntrada(position)
+            }
+        }
+
+        private fun animarEntrada(position: Int) {
+            binding.root.apply {
+                alpha = 0f
+                translationX = -100f
+                animate()
+                    .alpha(1f)
+                    .translationX(0f)
+                    .setDuration(400)
+                    .setStartDelay((position * 50).toLong())
+                    .start()
+            }
+        }
+
+        private fun animarPulso(onComplete: () -> Unit) {
+            val animatorSet = AnimatorSet()
+
+            val scaleXAnimator = ObjectAnimator.ofFloat(binding.root, "scaleX", 1f, 0.98f, 1f)
+            val scaleYAnimator = ObjectAnimator.ofFloat(binding.root, "scaleY", 1f, 0.98f, 1f)
+
+            animatorSet.apply {
+                playTogether(scaleXAnimator, scaleYAnimator)
+                duration = 200
+                addListener(object : android.animation.AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: android.animation.Animator) {
+                        onComplete()
+                    }
+                })
+                start()
+            }
+        }
+
+        private fun animarEliminacion(onComplete: () -> Unit) {
+            val animatorSet = AnimatorSet()
+
+            val alphaAnimator = ObjectAnimator.ofFloat(binding.root, "alpha", 1f, 0f)
+            val translationAnimator = ObjectAnimator.ofFloat(binding.root, "translationX", 0f, 100f)
+
+            animatorSet.apply {
+                playTogether(alphaAnimator, translationAnimator)
+                duration = 300
+                addListener(object : android.animation.AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: android.animation.Animator) {
+                        onComplete()
+                    }
+                })
+                start()
             }
         }
     }

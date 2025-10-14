@@ -10,7 +10,8 @@ import com.smartsaldo.app.databinding.ItemCategoriaBinding
 import com.smartsaldo.app.db.entities.Categoria
 
 class CategoriaAdapter(
-    private val onDeleteClick: (Categoria) -> Unit
+    private val onDeleteClick: (Categoria) -> Unit,
+    private val onEditClick: (Categoria) -> Unit
 ) : ListAdapter<Categoria, CategoriaAdapter.CategoriaViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoriaViewHolder {
@@ -21,7 +22,7 @@ class CategoriaAdapter(
     }
 
     override fun onBindViewHolder(holder: CategoriaViewHolder, position: Int) {
-        holder.bind(getItem(position), onDeleteClick)
+        holder.bind(getItem(position), onDeleteClick, onEditClick)
     }
 
     class CategoriaViewHolder(
@@ -30,14 +31,14 @@ class CategoriaAdapter(
 
         fun bind(
             categoria: Categoria,
-            onDeleteClick: (Categoria) -> Unit
+            onDeleteClick: (Categoria) -> Unit,
+            onEditClick: (Categoria) -> Unit
         ) {
             binding.apply {
                 tvNombreCategoria.text = categoria.nombre
                 tvTipo.text = categoria.tipo
                 tvIcono.text = categoria.icono
 
-                // Aplicar color de fondo
                 try {
                     val color = Color.parseColor(categoria.color)
                     viewColorCategoria.setBackgroundColor(color)
@@ -45,20 +46,27 @@ class CategoriaAdapter(
                     viewColorCategoria.setBackgroundColor(Color.GRAY)
                 }
 
-                // Badge para categorías predefinidas
                 if (categoria.esDefault) {
                     tvBadge.visibility = android.view.View.VISIBLE
                     tvBadge.text = "Predefinida"
+                    tvBadge.isClickable = false
+                    tvBadge.isFocusable = false
+                    btnEliminar.isEnabled = false
+                    btnEliminar.alpha = 0.5f
                 } else {
                     tvBadge.visibility = android.view.View.GONE
+                    btnEliminar.isEnabled = true
+                    btnEliminar.alpha = 1.0f
                 }
-
-                // Solo permitir eliminar categorías personalizadas
-                btnEliminar.isEnabled = !categoria.esDefault
-                btnEliminar.alpha = if (categoria.esDefault) 0.5f else 1.0f
 
                 btnEliminar.setOnClickListener {
                     onDeleteClick(categoria)
+                }
+
+                root.setOnClickListener {
+                    if (!categoria.esDefault) {
+                        onEditClick(categoria)
+                    }
                 }
             }
         }

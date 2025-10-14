@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +27,8 @@ class CategoriasFragment : Fragment() {
     private val authViewModel: AuthViewModel by activityViewModels()
 
     private lateinit var adapter: CategoriaAdapter
+    private var categoriaEditando: Categoria? = null
+    private var todasLasCategorias: List<Categoria> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,12 +45,17 @@ class CategoriasFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupFAB()
+        setupSwipeRefresh()
+        setupSearchView()
     }
 
     private fun setupRecyclerView() {
         adapter = CategoriaAdapter(
             onDeleteClick = { categoria ->
                 mostrarDialogEliminar(categoria)
+            },
+            onEditClick = { categoria ->
+                mostrarDialogEditarCategoria(categoria)
             }
         )
 
@@ -68,6 +76,7 @@ class CategoriasFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             categoriaViewModel.categorias.collect { categorias ->
+                todasLasCategorias = categorias
                 adapter.submitList(categorias)
                 updateEmptyState(categorias.isEmpty())
             }
@@ -75,6 +84,8 @@ class CategoriasFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             categoriaViewModel.uiState.collect { state ->
+                binding.swipeRefresh.isRefreshing = false
+
                 state.message?.let { message ->
                     Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
                     categoriaViewModel.limpiarMensaje()
@@ -90,8 +101,38 @@ class CategoriasFragment : Fragment() {
 
     private fun setupFAB() {
         binding.fabAddCategoria.setOnClickListener {
+            categoriaEditando = null
             mostrarDialogAgregarCategoria()
         }
+    }
+
+    private fun setupSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener {
+            binding.swipeRefresh.isRefreshing = false
+        }
+    }
+
+    private fun setupSearchView() {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean = true
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filtrarCategorias(newText ?: "")
+                return true
+            }
+        })
+    }
+
+    private fun filtrarCategorias(filtro: String) {
+        val categoriasFiltradas = if (filtro.isBlank()) {
+            todasLasCategorias
+        } else {
+            todasLasCategorias.filter { categoria ->
+                categoria.nombre.contains(filtro, ignoreCase = true)
+            }
+        }
+        adapter.submitList(categoriasFiltradas)
+        updateEmptyState(categoriasFiltradas.isEmpty())
     }
 
     private fun mostrarDialogAgregarCategoria() {
@@ -99,24 +140,14 @@ class CategoriasFragment : Fragment() {
         val view = bindingDialog.root
 
         val coloresDisponibles = listOf(
-            "#FF5722" to "Naranja",  // Comida
-            "#2196F3" to "Azul",     // Transporte
-            "#9C27B0" to "Púrpura",  // Ocio
-            "#F44336" to "Rojo",     // Salud
-            "#795548" to "Marrón",   // Casa
-            "#3F51B5" to "Índigo",   // Educación
-            "#E91E63" to "Rosado",   // Ropa
-            "#4CAF50" to "Verde",    // Sueldo
-            "#00BCD4" to "Cian",     // Freelance
-            "#FF9800" to "Ámbar",    // Otros
-            "#607D8B" to "Gris azul",// Varios
-            "#8BC34A" to "Verde claro" // Inversiones
+            "#FF5722" to "Naranja", "#2196F3" to "Azul", "#9C27B0" to "Púrpura", "#F44336" to "Rojo",
+            "#795548" to "Marrón", "#3F51B5" to "Índigo", "#E91E63" to "Rosado", "#4CAF50" to "Verde",
+            "#00BCD4" to "Cian", "#FF9800" to "Ámbar", "#607D8B" to "Gris azul", "#8BC34A" to "Verde claro"
         )
 
         var tipoSeleccionado = "GASTO"
         var colorSeleccionado = coloresDisponibles[0].first
 
-        // Configurar radio buttons para tipo
         bindingDialog.radioGasto.isChecked = true
         bindingDialog.radioGasto.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) tipoSeleccionado = "GASTO"
@@ -125,7 +156,6 @@ class CategoriasFragment : Fragment() {
             if (isChecked) tipoSeleccionado = "INGRESO"
         }
 
-        // Configurar spinner de colores
         val coloresNombres = coloresDisponibles.map { it.second }
         bindingDialog.spinnerColores.apply {
             val adapter = android.widget.ArrayAdapter(
@@ -150,10 +180,29 @@ class CategoriasFragment : Fragment() {
             })
         }
 
+        categoriaEditando?.let { categoria ->
+            bindingDialog.etNombre.setText(categoria.nombre)
+            bindingDialog.etIcono.setText(categoria.icono)
+
+            if (categoria.tipo == "GASTO") {
+                bindingDialog.radioGasto.isChecked = true
+                tipoSeleccionado = "GASTO"
+            } else {
+                bindingDialog.radioIngreso.isChecked = true
+                tipoSeleccionado = "INGRESO"
+            }
+
+            val indexColor = coloresDisponibles.indexOfFirst { it.first == categoria.color }
+            if (indexColor >= 0) {
+                bindingDialog.spinnerColores.setSelection(indexColor)
+                colorSeleccionado = categoria.color
+            }
+        }
+
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Nueva Categoría")
+            .setTitle(if (categoriaEditando != null) "Editar Categoría" else "Nueva Categoría")
             .setView(view)
-            .setPositiveButton("Crear") { _, _ ->
+            .setPositiveButton(if (categoriaEditando != null) "Guardar" else "Crear") { _, _ ->
                 val nombre = bindingDialog.etNombre.text.toString().trim()
                 val icono = bindingDialog.etIcono.text.toString().trim()
 
@@ -169,19 +218,33 @@ class CategoriasFragment : Fragment() {
 
                 val usuarioId = authViewModel.usuario.value?.uid ?: return@setPositiveButton
 
-                val categoria = Categoria(
-                    nombre = nombre,
-                    color = colorSeleccionado,
-                    icono = icono,
-                    tipo = tipoSeleccionado,
-                    esDefault = false,
-                    usuarioId = usuarioId
-                )
-
-                categoriaViewModel.crearCategoria(categoria)
+                if (categoriaEditando != null) {
+                    val categoriaActualizada = categoriaEditando!!.copy(
+                        nombre = nombre,
+                        color = colorSeleccionado,
+                        icono = icono,
+                        tipo = tipoSeleccionado
+                    )
+                    categoriaViewModel.actualizarCategoria(categoriaActualizada)
+                } else {
+                    val categoria = Categoria(
+                        nombre = nombre,
+                        color = colorSeleccionado,
+                        icono = icono,
+                        tipo = tipoSeleccionado,
+                        esDefault = false,
+                        usuarioId = usuarioId
+                    )
+                    categoriaViewModel.crearCategoria(categoria)
+                }
             }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun mostrarDialogEditarCategoria(categoria: Categoria) {
+        categoriaEditando = categoria
+        mostrarDialogAgregarCategoria()
     }
 
     private fun mostrarDialogEliminar(categoria: Categoria) {

@@ -273,6 +273,12 @@ class AuthRepository(
     }
 
     private suspend fun crearCategoriasDefault(usuarioId: String) {
+        // Verificar si ya existen categorías predeterminadas
+        val categoriasExistentes = categoriaDao.getCategorias(usuarioId).first()
+        if (categoriasExistentes.isNotEmpty()) {
+            return // Ya existen, no crear más
+        }
+
         val categorias = listOf(
             Categoria(nombre = "Comida", icono = "🍔", color = "#FF5722", tipo = "GASTO", esDefault = true),
             Categoria(nombre = "Transporte", icono = "🚗", color = "#2196F3", tipo = "GASTO", esDefault = true),
