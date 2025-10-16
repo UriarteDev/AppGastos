@@ -20,9 +20,11 @@ import com.google.android.material.snackbar.Snackbar
 import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.DialogRecuperarPasswordBinding
 import com.smartsaldo.app.databinding.FragmentLoginBinding
-import com.smartsaldo.app.ui.AuthState
-import com.smartsaldo.app.ui.AuthViewModel
-import com.smartsaldo.app.ui.MainActivity
+import com.smartsaldo.app.ui.shared.AuthState
+import com.smartsaldo.app.ui.shared.AuthViewModel
+import com.smartsaldo.app.ui.main.MainActivity
+import com.smartsaldo.app.utils.ValidationUtils.clearError
+import com.smartsaldo.app.utils.ValidationUtils.validateEmail
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -49,7 +51,6 @@ class LoginFragment : Fragment() {
                 android.util.Log.d("LoginFragment", "Token obtenido: ${idToken != null}")
 
                 if (idToken != null) {
-                    // Pasar el token al ViewModel
                     authViewModel.signInWithGoogle(idToken)
                 } else {
                     Toast.makeText(
@@ -92,7 +93,6 @@ class LoginFragment : Fragment() {
     ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
 
-        // Inicializar Google Sign-In Client
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -110,20 +110,21 @@ class LoginFragment : Fragment() {
 
     private fun setupUI() {
         binding.apply {
+            // Limpiar errores al escribir
+            etEmail.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) layoutEmail.clearError()
+            }
+
+            etPassword.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) layoutPassword.clearError()
+            }
+
             btnLogin.setOnClickListener {
-                val email = etEmail.text.toString().trim()
-                val password = etPassword.text.toString()
-
-                if (email.isBlank()) {
-                    etEmail.error = "Ingrese su email"
-                    return@setOnClickListener
+                if (validateLogin()) {
+                    val email = etEmail.text.toString().trim()
+                    val password = etPassword.text.toString()
+                    authViewModel.signInWithEmail(email, password)
                 }
-                if (password.isBlank()) {
-                    etPassword.error = "Ingrese su contraseña"
-                    return@setOnClickListener
-                }
-
-                authViewModel.signInWithEmail(email, password)
             }
 
             btnGoogleSignIn.setOnClickListener {
@@ -143,8 +144,32 @@ class LoginFragment : Fragment() {
         }
     }
 
+    private fun validateLogin(): Boolean {
+        binding.apply {
+            val isEmailValid = layoutEmail.validateEmail()
+            val isPasswordValid = layoutPassword.run {
+                val password = etPassword.text.toString()
+                when {
+                    password.isBlank() -> {
+                        error = "Ingrese su contraseña"
+                        false
+                    }
+                    password.length < 6 -> {
+                        error = "La contraseña debe tener al menos 6 caracteres"
+                        false
+                    }
+                    else -> {
+                        clearError()
+                        true
+                    }
+                }
+            }
+
+            return isEmailValid && isPasswordValid
+        }
+    }
+
     private fun iniciarGoogleSignIn() {
-        // Cerrar sesión previa para forzar selección de cuenta
         googleSignInClient?.signOut()?.addOnCompleteListener {
             val signInIntent = googleSignInClient?.signInIntent
             if (signInIntent != null) {
@@ -171,10 +196,8 @@ class LoginFragment : Fragment() {
                     is AuthState.Authenticated -> {
                         binding.progressBar.visibility = View.GONE
 
-                        // Esperar un momento para asegurar que todo se guarde
                         kotlinx.coroutines.delay(500)
 
-                        // Navegar a MainActivity
                         val intent = Intent(requireContext(), MainActivity::class.java)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
@@ -203,24 +226,28 @@ class LoginFragment : Fragment() {
             .setView(dialogBinding.root)
             .create()
 
-        dialogBinding.btnEnviar.setOnClickListener {
-            val email = dialogBinding.etEmail.text.toString().trim()
-            if (email.isBlank()) {
-                dialogBinding.etEmail.error = "Ingrese su email"
-                return@setOnClickListener
+        dialogBinding.apply {
+            // Limpiar error al escribir
+            etEmail.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) layoutEmail.clearError()
             }
 
-            authViewModel.resetPassword(email)
-            dialog.dismiss()
-            Snackbar.make(
-                binding.root,
-                "Email de recuperación enviado",
-                Snackbar.LENGTH_LONG
-            ).show()
-        }
+            btnEnviar.setOnClickListener {
+                if (layoutEmail.validateEmail()) {
+                    val email = etEmail.text.toString().trim()
+                    authViewModel.resetPassword(email)
+                    dialog.dismiss()
+                    Snackbar.make(
+                        binding.root,
+                        "Email de recuperación enviado a $email",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+            }
 
-        dialogBinding.btnCancelar.setOnClickListener {
-            dialog.dismiss()
+            btnCancelar.setOnClickListener {
+                dialog.dismiss()
+            }
         }
 
         dialog.show()

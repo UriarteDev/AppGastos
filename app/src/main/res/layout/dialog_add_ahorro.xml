@@ -16,21 +16,26 @@
         android:gravity="center" />
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layout_nombre"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Nombre de la meta"
-        app:endIconMode="clear_text">
+        app:endIconMode="clear_text"
+        app:counterEnabled="true"
+        app:counterMaxLength="50">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_nombre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textCapSentences" />
+            android:inputType="textCapSentences"
+            android:maxLength="50" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layout_meta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"

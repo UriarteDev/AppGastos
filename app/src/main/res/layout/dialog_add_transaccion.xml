@@ -50,6 +50,7 @@
         </com.google.android.material.chip.ChipGroup>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_monto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -66,21 +67,26 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_descripcion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Descripción"
-            app:endIconMode="clear_text">
+            app:endIconMode="clear_text"
+            app:counterEnabled="true"
+            app:counterMaxLength="100">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_descripcion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapSentences" />
+                android:inputType="textCapSentences"
+                android:maxLength="100" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_categoria"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -128,7 +134,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:hint="Notas (opcional)"
-            app:endIconMode="clear_text">
+            app:endIconMode="clear_text"
+            app:counterEnabled="true"
+            app:counterMaxLength="500">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_notas"
@@ -136,7 +144,8 @@
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
                 android:lines="3"
-                android:gravity="top" />
+                android:gravity="top"
+                android:maxLength="500" />
 
         </com.google.android.material.textfield.TextInputLayout>
 

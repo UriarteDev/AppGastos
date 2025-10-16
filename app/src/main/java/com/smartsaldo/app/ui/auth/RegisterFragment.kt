@@ -11,8 +11,12 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.FragmentRegisterBinding
-import com.smartsaldo.app.ui.AuthState
-import com.smartsaldo.app.ui.AuthViewModel
+import com.smartsaldo.app.ui.shared.AuthState
+import com.smartsaldo.app.ui.shared.AuthViewModel
+import com.smartsaldo.app.utils.ValidationUtils
+import com.smartsaldo.app.utils.ValidationUtils.clearError
+import com.smartsaldo.app.utils.ValidationUtils.validateEmail
+import com.smartsaldo.app.utils.ValidationUtils.validatePassword
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -42,38 +46,95 @@ class RegisterFragment : Fragment() {
 
     private fun setupUI() {
         binding.apply {
+            // Limpiar errores al escribir
+            etNombre.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) layoutNombre.clearError()
+            }
+
+            etEmail.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) layoutEmail.clearError()
+            }
+
+            etPassword.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) layoutPassword.clearError()
+            }
+
+            etConfirmPassword.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) layoutConfirmPassword.clearError()
+            }
+
             btnRegistrar.setOnClickListener {
-                val nombre = etNombre.text.toString().trim()
-                val email = etEmail.text.toString().trim()
-                val password = etPassword.text.toString()
-                val confirmPassword = etConfirmPassword.text.toString()
+                if (validateRegistration()) {
+                    val nombre = ValidationUtils.cleanName(etNombre.text.toString())
+                    val email = etEmail.text.toString().trim()
+                    val password = etPassword.text.toString()
 
-                if (nombre.isBlank()) {
-                    etNombre.error = "Ingrese su nombre"
-                    return@setOnClickListener
+                    authViewModel.signUpWithEmail(email, password, nombre)
                 }
-
-                if (email.isBlank()) {
-                    etEmail.error = "Ingrese su email"
-                    return@setOnClickListener
-                }
-
-                if (password.length < 6) {
-                    etPassword.error = "La contraseña debe tener al menos 6 caracteres"
-                    return@setOnClickListener
-                }
-
-                if (password != confirmPassword) {
-                    etConfirmPassword.error = "Las contraseñas no coinciden"
-                    return@setOnClickListener
-                }
-
-                authViewModel.signUpWithEmail(email, password, nombre)
             }
 
             tvYaTienesCuenta.setOnClickListener {
                 findNavController().navigateUp()
             }
+        }
+    }
+
+    private fun validateRegistration(): Boolean {
+        binding.apply {
+            // Validar nombre
+            val isNameValid = layoutNombre.run {
+                val nombre = etNombre.text.toString().trim()
+                when {
+                    nombre.isBlank() -> {
+                        error = "Ingrese su nombre"
+                        false
+                    }
+                    nombre.length < 2 -> {
+                        error = "El nombre debe tener al menos 2 caracteres"
+                        false
+                    }
+                    nombre.length > 50 -> {
+                        error = "El nombre es demasiado largo"
+                        false
+                    }
+                    !ValidationUtils.isValidName(nombre) -> {
+                        error = "El nombre contiene caracteres inválidos"
+                        false
+                    }
+                    else -> {
+                        clearError()
+                        true
+                    }
+                }
+            }
+
+            // Validar email
+            val isEmailValid = layoutEmail.validateEmail()
+
+            // Validar contraseña
+            val isPasswordValid = layoutPassword.validatePassword()
+
+            // Validar confirmación de contraseña
+            val isConfirmPasswordValid = layoutConfirmPassword.run {
+                val password = etPassword.text.toString()
+                val confirmPassword = etConfirmPassword.text.toString()
+                when {
+                    confirmPassword.isBlank() -> {
+                        error = "Confirme su contraseña"
+                        false
+                    }
+                    confirmPassword != password -> {
+                        error = "Las contraseñas no coinciden"
+                        false
+                    }
+                    else -> {
+                        clearError()
+                        true
+                    }
+                }
+            }
+
+            return isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid
         }
     }
 
