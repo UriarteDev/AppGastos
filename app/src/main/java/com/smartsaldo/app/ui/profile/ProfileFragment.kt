@@ -26,9 +26,12 @@ import com.smartsaldo.app.databinding.FragmentProfileBinding
 import com.smartsaldo.app.ui.auth.LoginActivity
 import com.smartsaldo.app.ui.shared.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import java.io.ByteArrayOutputStream
-
+import kotlinx.coroutines.tasks.await
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
 
@@ -55,6 +58,7 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
+
         return binding.root
     }
 
@@ -126,94 +130,88 @@ class ProfileFragment : Fragment() {
         binding.progressBar.visibility = View.VISIBLE
         binding.ivFotoPerfil.isEnabled = false
 
-        try {
-            Log.d("ProfileFragment", "Iniciando subida de imagen...")
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                // Comprimir imagen
+                val compressedData = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    comprimirImagen(imageUri)
+                }
 
-            // Comprimir la imagen antes de subirla
-            Log.d("ProfileFragment", "Comprimiendo imagen...")
-            val compressedData = comprimirImagen(imageUri)
-            Log.d("ProfileFragment", "Imagen comprimida: ${compressedData.size / 1024}KB")
+                // Subir a carpeta profile_images
+                val fileName = "${usuario.uid}.jpg"
+                val storageRef = storage.reference
+                    .child("profile_images")
+                    .child(fileName)
 
-            // Referencia a Firebase Storage con nombre simple
-            val fileName = "${usuario.uid}.jpg"
-            val storageRef = storage.reference
-                .child("profile_images")
-                .child(fileName)
+                // Metadata básico
+                val metadata = com.google.firebase.storage.StorageMetadata.Builder()
+                    .setContentType("image/jpeg")
+                    .build()
 
-            Log.d("ProfileFragment", "Subiendo imagen a Storage: $fileName")
+                // Subir archivo
+                val uploadTask = storageRef.putBytes(compressedData, metadata)
 
-            // Subir con callbacks en lugar de await
-            val uploadTask = storageRef.putBytes(compressedData)
+                uploadTask.addOnSuccessListener { taskSnapshot ->
+                    // Obtener URL de descarga
+                    storageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                        // Actualizar Firebase Auth
+                        val profileUpdate = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                            .setPhotoUri(downloadUrl)
+                            .build()
 
-            uploadTask.addOnProgressListener { taskSnapshot ->
-                val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toInt()
-                Log.d("ProfileFragment", "Progreso de subida: $progress%")
-            }.addOnSuccessListener { taskSnapshot ->
-                Log.d("ProfileFragment", "Imagen subida exitosamente")
-                Log.d("ProfileFragment", "Obteniendo URL de descarga...")
+                        usuario.updateProfile(profileUpdate).addOnSuccessListener {
+                            // Actualizar Room local
+                            viewLifecycleOwner.lifecycleScope.launch {
+                                authViewModel.usuario.value?.let { currentUser ->
+                                    val updatedUser = currentUser.copy(photoURL = downloadUrl.toString())
+                                    authViewModel.actualizarUsuario(updatedUser)
+                                }
 
-                // Obtener URL de descarga
-                storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                    Log.d("ProfileFragment", "URL obtenida: $downloadUri")
+                                // Actualizar UI
+                                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                    cargarFotoPerfil(downloadUrl.toString())
+                                    binding.progressBar.visibility = View.GONE
+                                    binding.ivFotoPerfil.isEnabled = true
 
-                    // Actualizar perfil en Firebase Auth
-                    val profileUpdates = UserProfileChangeRequest.Builder()
-                        .setPhotoUri(downloadUri)
-                        .build()
-
-                    usuario.updateProfile(profileUpdates).addOnSuccessListener {
-                        Log.d("ProfileFragment", "Perfil actualizado en Firebase Auth")
-
-                        // Actualizar en Room (local)
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            val currentUser = authViewModel.usuario.value
-                            if (currentUser != null) {
-                                Log.d("ProfileFragment", "Actualizando usuario local...")
-                                val updatedUser = currentUser.copy(photoURL = downloadUri.toString())
-                                authViewModel.actualizarUsuario(updatedUser)
+                                    Snackbar.make(
+                                        binding.root,
+                                        "Foto actualizada ✅",
+                                        Snackbar.LENGTH_SHORT
+                                    ).show()
+                                }
                             }
-
-                            // Actualizar UI
-                            cargarFotoPerfil(downloadUri.toString())
-
-                            binding.progressBar.visibility = View.GONE
-                            binding.ivFotoPerfil.isEnabled = true
-
-                            Snackbar.make(
-                                binding.root,
-                                "Foto de perfil actualizada ✅",
-                                Snackbar.LENGTH_SHORT
-                            ).show()
-
-                            Log.d("ProfileFragment", "Proceso completado exitosamente")
+                        }.addOnFailureListener { e ->
+                            mostrarError("Error actualizando perfil: ${e.message}")
                         }
                     }.addOnFailureListener { e ->
-                        Log.e("ProfileFragment", "Error actualizando perfil en Auth", e)
-                        binding.progressBar.visibility = View.GONE
-                        binding.ivFotoPerfil.isEnabled = true
-                        Snackbar.make(binding.root, "Error actualizando perfil: ${e.message}", Snackbar.LENGTH_LONG).show()
+                        mostrarError("Error obteniendo URL: ${e.message}")
                     }
                 }.addOnFailureListener { e ->
-                    Log.e("ProfileFragment", "Error obteniendo URL", e)
-                    binding.progressBar.visibility = View.GONE
-                    binding.ivFotoPerfil.isEnabled = true
-                    Snackbar.make(binding.root, "Error obteniendo URL: ${e.message}", Snackbar.LENGTH_LONG).show()
+                    val mensaje = when {
+                        e.message?.contains("Unable to obtain", ignoreCase = true) == true ->
+                            "Error de Storage. Verifica la configuración"
+                        e.message?.contains("permission", ignoreCase = true) == true ->
+                            "Sin permisos. Contacta al administrador"
+                        e.message?.contains("network", ignoreCase = true) == true ->
+                            "Error de red. Verifica tu conexión"
+                        else -> "Error al subir imagen: ${e.message}"
+                    }
+                    mostrarError(mensaje)
                 }
-            }.addOnFailureListener { e ->
-                Log.e("ProfileFragment", "Error subiendo imagen", e)
-                binding.progressBar.visibility = View.GONE
-                binding.ivFotoPerfil.isEnabled = true
-                Snackbar.make(binding.root, "Error subiendo imagen: ${e.message}", Snackbar.LENGTH_LONG).show()
-            }
 
-        } catch (e: Exception) {
-            Log.e("ProfileFragment", "Error al procesar imagen", e)
-            binding.progressBar.visibility = View.GONE
-            binding.ivFotoPerfil.isEnabled = true
-            Snackbar.make(binding.root, "Error: ${e.message}", Snackbar.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                mostrarError("Error al procesar imagen: ${e.message}")
+            }
         }
     }
 
+    private fun mostrarError(mensaje: String) {
+        viewLifecycleOwner.lifecycleScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            binding.progressBar.visibility = View.GONE
+            binding.ivFotoPerfil.isEnabled = true
+            Snackbar.make(binding.root, mensaje, Snackbar.LENGTH_LONG).show()
+        }
+    }
     /**
      * Comprime la imagen para reducir el tamaño del archivo
      */
@@ -252,7 +250,10 @@ class ProfileFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                kotlinx.coroutines.delay(1000)
+                // Sincronizar desde Firestore a Room
+                authViewModel.sincronizarDatos()
+
+                delay(1000) // Dar tiempo a que se complete
 
                 Snackbar.make(
                     binding.root,
@@ -262,8 +263,8 @@ class ProfileFragment : Fragment() {
             } catch (e: Exception) {
                 Snackbar.make(
                     binding.root,
-                    "Error de sincronización",
-                    Snackbar.LENGTH_SHORT
+                    "Error: ${e.message}",
+                    Snackbar.LENGTH_LONG
                 ).show()
             } finally {
                 binding.progressBar.visibility = View.GONE

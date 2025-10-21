@@ -48,7 +48,9 @@ class MainActivity : AppCompatActivity() {
                     transaccionViewModel.setUsuarioId(it.uid)
                     ahorroViewModel.setUsuarioId(it.uid)
 
-                    // Cargar HomeFragment solo si no hay nada cargado
+                    // ✅ SINCRONIZAR AL INICIAR LA APP
+                    authViewModel.sincronizarDatos()
+
                     if (supportFragmentManager.findFragmentById(R.id.fragment_container) == null) {
                         loadHomeFragment()
                     }

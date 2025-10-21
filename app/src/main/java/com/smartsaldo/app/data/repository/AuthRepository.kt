@@ -229,7 +229,7 @@ class AuthRepository(
         }
     }
 
-    private suspend fun sincronizarDesdeFirestore(usuarioId: String) {
+    suspend fun sincronizarDesdeFirestore(usuarioId: String) {
         try {
             val transaccionesSnapshot = firestore.collection("usuarios")
                 .document(usuarioId)

@@ -1,5 +1,6 @@
 package com.smartsaldo.app.ui.shared
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartsaldo.app.data.local.entities.Usuario
@@ -61,6 +62,19 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun sincronizarDatos() {
+        viewModelScope.launch {
+            try {
+                val usuario = _usuario.value
+                if (usuario != null) {
+                    authRepository.sincronizarDesdeFirestore(usuario.uid)
+                    Log.d("AuthViewModel", "✅ Sincronización completada")
+                }
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "❌ Error sincronizando", e)
+            }
+        }
+    }
     fun signUpWithEmail(email: String, password: String, displayName: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading
