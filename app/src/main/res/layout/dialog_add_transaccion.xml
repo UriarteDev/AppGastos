@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nueva Transacción"
+            android:text="@string/nueva_transaccion"
             android:textAppearance="?attr/textAppearanceHeadline6"
             android:layout_marginBottom="24dp"
             android:gravity="center" />
@@ -21,7 +21,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tipo"
+            android:text="@string/tipo"
             android:textAppearance="?attr/textAppearanceSubtitle2"
             android:layout_marginBottom="8dp" />
 
@@ -37,14 +37,14 @@
                 android:id="@+id/chip_gasto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gasto"
+                android:text="@string/gasto"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_ingreso"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ingreso"
+                android:text="@string/ingreso"
                 style="@style/Widget.MaterialComponents.Chip.Choice" />
 
         </com.google.android.material.chip.ChipGroup>
@@ -54,7 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Monto"
+            android:hint="@string/monto"
             app:prefixText="S/ "
             app:endIconMode="clear_text">
 
@@ -71,7 +71,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Descripción"
+            android:hint="@string/descripcion"
             app:endIconMode="clear_text"
             app:counterEnabled="true"
             app:counterMaxLength="100">
@@ -90,7 +90,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Categoría"
+            android:hint="@string/categoria"
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu">
 
             <AutoCompleteTextView
@@ -133,7 +133,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:hint="Notas (opcional)"
+            android:hint="@string/nota_opcional"
             app:endIconMode="clear_text"
             app:counterEnabled="true"
             app:counterMaxLength="500">
@@ -160,14 +160,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:text="Cancelar"
+                android:text="@string/cancelar"
                 style="@style/Widget.MaterialComponents.Button.TextButton" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_guardar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Guardar" />
+                android:text="@string/guardar" />
 
         </LinearLayout>
 

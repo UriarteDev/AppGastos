@@ -21,7 +21,7 @@
         android:id="@+id/tv_bienvenido"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bienvenido"
+        android:text="@string/bienvenido"
         android:textAppearance="?attr/textAppearanceHeadline4"
         android:layout_marginTop="24dp"
         app:layout_constraintTop_toBottomOf="@id/iv_logo"
@@ -32,7 +32,7 @@
         android:id="@+id/tv_subtitulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Inicia sesión para continuar"
+        android:text="@string/inicia_sesion_para_continuar"
         android:textAppearance="?attr/textAppearanceBody1"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@id/tv_bienvenido"
@@ -44,7 +44,7 @@
         android:id="@+id/layout_email"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Email"
+        android:hint="@string/email"
         android:layout_marginTop="32dp"
         app:startIconDrawable="@android:drawable/ic_dialog_email"
         app:endIconMode="clear_text"
@@ -64,7 +64,7 @@
         android:id="@+id/layout_password"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Contraseña"
+        android:hint="@string/password"
         android:layout_marginTop="16dp"
         app:startIconDrawable="@android:drawable/ic_lock_lock"
         app:endIconMode="password_toggle"
@@ -84,7 +84,7 @@
         android:id="@+id/tv_olvide_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="¿Olvidaste tu contraseña?"
+        android:text="@string/olvide_password"
         android:textColor="@color/colorPrimary"
         android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@id/layout_password"
@@ -95,7 +95,7 @@
         android:id="@+id/btn_login"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Iniciar Sesión"
+        android:text="@string/iniciar_sesion"
         android:layout_marginTop="24dp"
         app:layout_constraintTop_toBottomOf="@id/tv_olvide_password"
         app:layout_constraintStart_toStartOf="parent"
@@ -130,7 +130,7 @@
         android:id="@+id/btn_google_sign_in"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Continuar con Google"
+        android:text="@string/continuar_con_google"
         android:layout_marginTop="24dp"
         app:icon="@drawable/ic_google"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -152,13 +152,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="¿No tienes cuenta? " />
+            android:text="@string/no_tienes_cuenta" />
 
         <TextView
             android:id="@+id/tv_registrarse"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Regístrate"
+            android:text="@string/registrarse"
             android:textColor="@color/colorPrimary"
             android:textStyle="bold" />
     </LinearLayout>

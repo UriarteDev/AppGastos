@@ -68,13 +68,39 @@ class AuthViewModel @Inject constructor(
                 val usuario = _usuario.value
                 if (usuario != null) {
                     authRepository.sincronizarDesdeFirestore(usuario.uid)
-                    Log.d("AuthViewModel", "✅ Sincronización completada")
+                    android.util.Log.d("AuthViewModel", "✅ Datos descargados de Firestore")
                 }
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "❌ Error sincronizando", e)
+                android.util.Log.e("AuthViewModel", "❌ Error descargando datos", e)
             }
         }
     }
+
+    fun sincronizarTransaccionesAFirestore(usuarioId: String) {
+        viewModelScope.launch {
+            try {
+                authRepository.sincronizarTransaccionesAFirestore(usuarioId)
+                android.util.Log.d("AuthViewModel", "✅ Transacciones subidas a Firestore")
+            } catch (e: Exception) {
+                android.util.Log.e("AuthViewModel", "❌ Error subiendo transacciones", e)
+            }
+        }
+    }
+
+    /**
+     * Sincroniza ahorros desde Room a Firestore (sube)
+     */
+    fun sincronizarAhorrosAFirestore(usuarioId: String) {
+        viewModelScope.launch {
+            try {
+                authRepository.sincronizarAhorrosAFirestore(usuarioId)
+                android.util.Log.d("AuthViewModel", "✅ Ahorros subidos a Firestore")
+            } catch (e: Exception) {
+                android.util.Log.e("AuthViewModel", "❌ Error subiendo ahorros", e)
+            }
+        }
+    }
+
     fun signUpWithEmail(email: String, password: String, displayName: String) {
         viewModelScope.launch {
             _authState.value = AuthState.Loading

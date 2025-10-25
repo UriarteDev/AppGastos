@@ -8,6 +8,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
+import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.DialogAddAporteBinding
 import com.smartsaldo.app.ui.shared.AuthViewModel
 import com.smartsaldo.app.utils.ValidationUtils.clearError
@@ -56,7 +57,6 @@ class AddAporteDialog : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.apply {
-            // Limpiar errores al enfocar
             etMonto.setOnFocusChangeListener { _, hasFocus ->
                 if (hasFocus) layoutMonto.clearError()
             }
@@ -72,15 +72,13 @@ class AddAporteDialog : DialogFragment() {
 
     private fun validateAporte(): Boolean {
         binding.apply {
-            // Validar monto
             val isMontoValid = layoutMonto.validateAmount(maxAmount = 99999999.99)
 
-            // Validar nota (opcional pero si existe, validar longitud)
             val nota = etNota.text.toString()
             val isNotaValid = if (nota.isNotBlank() && nota.length > 200) {
                 Snackbar.make(
                     root,
-                    "La nota es muy larga (máximo 200 caracteres)",
+                    getString(R.string.nota_muy_larga),
                     Snackbar.LENGTH_SHORT
                 ).show()
                 false
@@ -108,7 +106,7 @@ class AddAporteDialog : DialogFragment() {
                         )
                         dismiss()
                     } else {
-                        layoutMonto.error = "Error: Usuario no autenticado"
+                        layoutMonto.error = getString(R.string.error_usuario_no_autenticado)
                     }
                 }
             }

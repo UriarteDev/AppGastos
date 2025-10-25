@@ -11,7 +11,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tipo"
+        android:text="@string/tipo"
         android:textAppearance="?attr/textAppearanceSubtitle2"
         android:layout_marginBottom="8dp" />
 
@@ -25,14 +25,14 @@
             android:id="@+id/radio_gasto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Gasto"
+            android:text="@string/gasto"
             android:layout_marginEnd="16dp" />
 
         <com.google.android.material.radiobutton.MaterialRadioButton
             android:id="@+id/radio_ingreso"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ingreso" />
+            android:text="@string/ingreso" />
 
     </RadioGroup>
 
@@ -41,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:hint="Nombre"
+        android:hint="@string/nombre"
         app:endIconMode="clear_text">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -56,7 +56,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Color"
+        android:text="@string/color"
         android:textAppearance="?attr/textAppearanceSubtitle2"
         android:layout_marginBottom="8dp" />
 
@@ -77,7 +77,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Emoji o Icono"
+        android:hint="@string/icono"
         app:endIconMode="clear_text">
 
         <com.google.android.material.textfield.TextInputEditText

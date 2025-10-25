@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Agregar Aporte"
+        android:text="@string/agregar_aporte"
         android:textAppearance="?attr/textAppearanceHeadline6"
         android:layout_marginBottom="24dp"
         android:gravity="center" />
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:hint="Monto del aporte"
+        android:hint="@string/monto_aporte"
         app:prefixText="S/ "
         app:endIconMode="clear_text">
 
@@ -36,7 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:hint="Nota (opcional)"
+        android:hint="@string/nota_opcional"
         app:endIconMode="clear_text"
         app:counterEnabled="true"
         app:counterMaxLength="200">
@@ -63,14 +63,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:text="Cancelar"
+            android:text="@string/cancelar"
             style="@style/Widget.MaterialComponents.Button.TextButton" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_guardar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Guardar" />
+            android:text="@string/guardar" />
 
     </LinearLayout>
 

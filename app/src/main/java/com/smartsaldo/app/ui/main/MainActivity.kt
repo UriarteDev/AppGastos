@@ -1,5 +1,6 @@
 package com.smartsaldo.app.ui.main
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +19,9 @@ import com.smartsaldo.app.ui.profile.ProfileFragment
 import com.smartsaldo.app.ui.home.TransaccionViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -39,8 +43,38 @@ class MainActivity : AppCompatActivity() {
         setupAdMob()
         setupBottomNavigation()
         cargarDatosUsuario()
+        observarConectividad()
     }
 
+    private fun observarConectividad() {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: android.net.Network) {
+                android.util.Log.d("MainActivity", "📶 Internet disponible - Sincronizando...")
+
+                // Sincronizar cuando se conecte
+                lifecycleScope.launch {
+                    authViewModel.usuario.value?.let { usuario ->
+                        sincronizarDatosBidireccional(usuario.uid)
+                    }
+                }
+            }
+
+            override fun onLost(network: android.net.Network) {
+                android.util.Log.d("MainActivity", "📵 Sin internet")
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            connectivityManager.registerDefaultNetworkCallback(networkCallback)
+        } else {
+            val request = android.net.NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            connectivityManager.registerNetworkCallback(request, networkCallback)
+        }
+    }
     private fun cargarDatosUsuario() {
         lifecycleScope.launch {
             authViewModel.usuario.collect { usuario ->
@@ -48,13 +82,44 @@ class MainActivity : AppCompatActivity() {
                     transaccionViewModel.setUsuarioId(it.uid)
                     ahorroViewModel.setUsuarioId(it.uid)
 
-                    // ✅ SINCRONIZAR AL INICIAR LA APP
-                    authViewModel.sincronizarDatos()
+                    // 🔄 SINCRONIZACIÓN BIDIRECCIONAL
+                    sincronizarDatosBidireccional(it.uid)
 
+                    // Cargar HomeFragment si no hay nada cargado
                     if (supportFragmentManager.findFragmentById(R.id.fragment_container) == null) {
                         loadHomeFragment()
                     }
                 }
+            }
+        }
+    }
+
+    private fun sincronizarDatosBidireccional(usuarioId: String) {
+        lifecycleScope.launch {
+            try {
+                // Verificar conectividad
+                if (!com.smartsaldo.app.utils.NetworkUtils.isNetworkAvailable(this@MainActivity)) {
+                    android.util.Log.w("MainActivity", "⚠️ Sin conexión a internet")
+                    // Mostrar mensaje opcional al usuario
+                    return@launch
+                }
+
+                android.util.Log.d("MainActivity", "🔄 Iniciando sincronización bidireccional...")
+
+                // 1️⃣ Descargar datos de Firestore a Room
+                authViewModel.sincronizarDatos()
+
+                // Esperar un poco para que Room se actualice
+                kotlinx.coroutines.delay(1000)
+
+                // 2️⃣ Subir datos de Room a Firestore
+                authViewModel.sincronizarTransaccionesAFirestore(usuarioId)
+                authViewModel.sincronizarAhorrosAFirestore(usuarioId)
+
+                android.util.Log.d("MainActivity", "✅ Sincronización bidireccional completada")
+
+            } catch (e: Exception) {
+                android.util.Log.e("MainActivity", "❌ Error en sincronización", e)
             }
         }
     }

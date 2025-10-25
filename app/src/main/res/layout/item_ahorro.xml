@@ -100,7 +100,7 @@
             android:id="@+id/btn_agregar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Agregar Aporte"
+            android:text="@string/agregar_aporte"
             android:layout_marginTop="12dp"
             app:icon="@drawable/ic_add_24"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />

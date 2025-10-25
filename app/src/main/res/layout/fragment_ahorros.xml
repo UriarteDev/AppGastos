@@ -19,7 +19,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mis Metas de Ahorro"
+                android:text="@string/mis_metas_ahorro"
                 android:textAppearance="?attr/textAppearanceHeadline5"
                 android:layout_marginBottom="16dp" />
 
@@ -49,14 +49,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No tienes metas de ahorro"
+                    android:text="@string/no_metas_ahorro"
                     android:textAppearance="?attr/textAppearanceHeadline6"
                     android:layout_marginTop="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Toca el botón + para crear tu primera meta"
+                    android:text="@string/toca_boton_crear_meta"
                     android:textAppearance="?attr/textAppearanceBody2"
                     android:textAlignment="center" />
 

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.DialogAddAhorroBinding
 import com.smartsaldo.app.utils.ValidationUtils.clearError
 import com.smartsaldo.app.utils.ValidationUtils.validateAmount
@@ -32,7 +33,6 @@ class AddAhorroDialog : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.apply {
-            // Limpiar errores al enfocar
             etNombre.setOnFocusChangeListener { _, hasFocus ->
                 if (hasFocus) layoutNombre.clearError()
             }
@@ -52,20 +52,19 @@ class AddAhorroDialog : DialogFragment() {
 
     private fun validateAhorro(): Boolean {
         binding.apply {
-            // Validar nombre
             val isNombreValid = layoutNombre.run {
                 val nombre = etNombre.text.toString().trim()
                 when {
                     nombre.isBlank() -> {
-                        error = "Ingrese un nombre para su meta"
+                        error = getString(R.string.ingrese_nombre_meta)
                         false
                     }
                     nombre.length < 3 -> {
-                        error = "El nombre es muy corto (mínimo 3 caracteres)"
+                        error = getString(R.string.nombre_meta_muy_corto)
                         false
                     }
                     nombre.length > 50 -> {
-                        error = "El nombre es muy largo (máximo 50 caracteres)"
+                        error = getString(R.string.nombre_meta_muy_largo)
                         false
                     }
                     else -> {
@@ -75,7 +74,6 @@ class AddAhorroDialog : DialogFragment() {
                 }
             }
 
-            // Validar meta
             val isMetaValid = layoutMeta.validateAmount(maxAmount = 999999999.99)
 
             return isNombreValid && isMetaValid

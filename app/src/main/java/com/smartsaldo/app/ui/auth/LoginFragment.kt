@@ -40,22 +40,18 @@ class LoginFragment : Fragment() {
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        android.util.Log.d("LoginFragment", "Google Sign-In result: ${result.resultCode}")
-
         if (result.resultCode == Activity.RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
                 val idToken = account?.idToken
 
-                android.util.Log.d("LoginFragment", "Token obtenido: ${idToken != null}")
-
                 if (idToken != null) {
                     authViewModel.signInWithGoogle(idToken)
                 } else {
                     Toast.makeText(
                         requireContext(),
-                        "No se pudo obtener el token de Google",
+                        getString(R.string.error_token_google),
                         Toast.LENGTH_SHORT
                     ).show()
                     binding.progressBar.visibility = View.GONE
@@ -63,10 +59,9 @@ class LoginFragment : Fragment() {
                     binding.btnGoogleSignIn.isEnabled = true
                 }
             } catch (e: ApiException) {
-                android.util.Log.e("LoginFragment", "Error de Google Sign-In", e)
                 Toast.makeText(
                     requireContext(),
-                    "Error de Google Sign-In: ${e.message}",
+                    getString(R.string.error_google_signin, e.message),
                     Toast.LENGTH_SHORT
                 ).show()
                 binding.progressBar.visibility = View.GONE
@@ -74,10 +69,9 @@ class LoginFragment : Fragment() {
                 binding.btnGoogleSignIn.isEnabled = true
             }
         } else {
-            android.util.Log.d("LoginFragment", "Login cancelado por el usuario")
             Toast.makeText(
                 requireContext(),
-                "Inicio de sesión cancelado",
+                getString(R.string.login_cancelado),
                 Toast.LENGTH_SHORT
             ).show()
             binding.progressBar.visibility = View.GONE
@@ -151,11 +145,11 @@ class LoginFragment : Fragment() {
                 val password = etPassword.text.toString()
                 when {
                     password.isBlank() -> {
-                        error = "Ingrese su contraseña"
+                        error = getString(R.string.ingrese_password)
                         false
                     }
                     password.length < 6 -> {
-                        error = "La contraseña debe tener al menos 6 caracteres"
+                        error = getString(R.string.password_min_6)
                         false
                     }
                     else -> {
@@ -177,7 +171,7 @@ class LoginFragment : Fragment() {
             } else {
                 Toast.makeText(
                     requireContext(),
-                    "Error inicializando Google Sign-In",
+                    getString(R.string.error_inicializar_google),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -227,7 +221,6 @@ class LoginFragment : Fragment() {
             .create()
 
         dialogBinding.apply {
-            // Limpiar error al escribir
             etEmail.setOnFocusChangeListener { _, hasFocus ->
                 if (hasFocus) layoutEmail.clearError()
             }
@@ -239,7 +232,7 @@ class LoginFragment : Fragment() {
                     dialog.dismiss()
                     Snackbar.make(
                         binding.root,
-                        "Email de recuperación enviado a $email",
+                        getString(R.string.email_recuperacion_enviado, email),
                         Snackbar.LENGTH_LONG
                     ).show()
                 }

@@ -18,7 +18,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Estadísticas"
+                android:text="@string/estadisticas"
                 android:textAppearance="?attr/textAppearanceHeadline5"
                 android:layout_marginBottom="16dp" />
 
@@ -32,21 +32,21 @@
                     android:id="@+id/chip_semanal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Semanal"
+                    android:text="@string/semanal"
                     style="@style/Widget.MaterialComponents.Chip.Choice" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_quincenal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Quincenal"
+                    android:text="@string/quincenal"
                     style="@style/Widget.MaterialComponents.Chip.Choice" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_mensual"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Mensual"
+                    android:text="@string/mensual"
                     android:checked="true"
                     style="@style/Widget.MaterialComponents.Chip.Choice" />
 
@@ -54,7 +54,7 @@
                     android:id="@+id/chip_anual"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Anual"
+                    android:text="@string/anual"
                     style="@style/Widget.MaterialComponents.Chip.Choice" />
 
             </com.google.android.material.chip.ChipGroup>
@@ -63,7 +63,7 @@
                 android:id="@+id/tv_titulo_estadistica"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Últimos 12 meses"
+                android:text="@string/ultimos_12_meses"
                 android:textAppearance="?attr/textAppearanceSubtitle1"
                 android:layout_marginBottom="16dp" />
 
@@ -97,7 +97,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Resumen"
+                        android:text="@string/resumen"
                         android:textAppearance="?attr/textAppearanceSubtitle1"
                         android:layout_marginBottom="12dp" />
 

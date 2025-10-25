@@ -1,6 +1,5 @@
 package com.smartsaldo.app.ui.home
 
-import android.R
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
@@ -11,6 +10,7 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.smartsaldo.app.R
 import com.smartsaldo.app.data.local.entities.Categoria
 import com.smartsaldo.app.data.local.entities.TipoTransaccion
 import com.smartsaldo.app.data.local.entities.TransaccionConCategoria
@@ -163,7 +163,7 @@ class EditTransaccionDialog : DialogFragment() {
 
         val adapter = ArrayAdapter(
             requireContext(),
-            R.layout.simple_dropdown_item_1line,
+            android.R.layout.simple_dropdown_item_1line,
             categoriasFiltradas.map { it.nombre }
         )
 
@@ -220,17 +220,17 @@ class EditTransaccionDialog : DialogFragment() {
             val notas = etNotas.text.toString().trim().ifBlank { null }
 
             if (monto == null || monto <= 0) {
-                etMonto.error = "Ingrese un monto válido"
+                etMonto.error = getString(R.string.monto_mayor_cero)
                 return
             }
 
             if (descripcion.isBlank()) {
-                etDescripcion.error = "Ingrese una descripción"
+                etDescripcion.error = getString(R.string.ingrese_descripcion)
                 return
             }
 
             if (categoriaSeleccionada == null) {
-                spinnerCategoria.error = "Seleccione una categoría"
+                spinnerCategoria.error = getString(R.string.seleccione_categoria)
                 return
             }
 

@@ -86,19 +86,19 @@ class RegisterFragment : Fragment() {
                 val nombre = etNombre.text.toString().trim()
                 when {
                     nombre.isBlank() -> {
-                        error = "Ingrese su nombre"
+                        error = getString(R.string.ingrese_nombre)
                         false
                     }
                     nombre.length < 2 -> {
-                        error = "El nombre debe tener al menos 2 caracteres"
+                        error = getString(R.string.nombre_muy_corto)
                         false
                     }
                     nombre.length > 50 -> {
-                        error = "El nombre es demasiado largo"
+                        error = getString(R.string.nombre_muy_largo)
                         false
                     }
                     !ValidationUtils.isValidName(nombre) -> {
-                        error = "El nombre contiene caracteres inválidos"
+                        error = getString(R.string.nombre_caracteres_invalidos)
                         false
                     }
                     else -> {
@@ -120,11 +120,11 @@ class RegisterFragment : Fragment() {
                 val confirmPassword = etConfirmPassword.text.toString()
                 when {
                     confirmPassword.isBlank() -> {
-                        error = "Confirme su contraseña"
+                        error = getString(R.string.confirme_password)
                         false
                     }
                     confirmPassword != password -> {
-                        error = "Las contraseñas no coinciden"
+                        error = getString(R.string.passwords_no_coinciden)
                         false
                     }
                     else -> {

@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
         android:id="@+id/nav_home"
         android:icon="@drawable/ic_home"
-        android:title="Inicio" />
+        android:title="@string/inicio" />
 
     <item
         android:id="@+id/nav_stats"
         android:icon="@drawable/ic_bar_chart"
-        android:title="Estadísticas" />
+        android:title="@string/estadisticas" />
 
     <item
         android:id="@+id/nav_categories"
         android:icon="@drawable/ic_category"
-        android:title="Categorías" />
+        android:title="@string/categorias" />
 
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_person"
-        android:title="Perfil" />
+        android:title="@string/perfil" />
 
     <item
         android:id="@+id/nav_ahorros"
         android:icon="@drawable/ic_category"
-        android:title="Ahorros" />
+        android:title="@string/ahorros" />
 </menu>

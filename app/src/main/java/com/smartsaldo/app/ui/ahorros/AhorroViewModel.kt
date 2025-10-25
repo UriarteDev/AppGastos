@@ -52,12 +52,12 @@ class AhorroViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Meta de ahorro creada ✅"
+                    message = "meta_creada"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al crear ahorro"
+                    error = e.message ?: "error_crear_ahorro"
                 )
             }
         }
@@ -79,12 +79,12 @@ class AhorroViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Aporte registrado ✅"
+                    message = "aporte_registrado"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al agregar aporte"
+                    error = e.message ?: "error_agregar_aporte"
                 )
             }
         }
@@ -97,12 +97,12 @@ class AhorroViewModel @Inject constructor(
                 ahorroRepository.eliminarAhorro(ahorro)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Meta de ahorro eliminada"
+                    message = "meta_eliminada"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al eliminar"
+                    error = e.message ?: "error_eliminar_ahorro"
                 )
             }
         }

@@ -42,12 +42,12 @@ class CategoriaViewModel @Inject constructor(
                 categoriaRepository.insertarCategoria(categoria)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Categoría creada ✅"
+                    message = "categoria_creada"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al crear categoría"
+                    error = e.message ?: "error_crear_categoria"
                 )
             }
         }
@@ -60,12 +60,12 @@ class CategoriaViewModel @Inject constructor(
                 categoriaRepository.actualizarCategoria(categoria)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Categoría actualizada ✅"
+                    message = "categoria_actualizada"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al actualizar categoría"
+                    error = e.message ?: "error_actualizar_categoria"
                 )
             }
         }
@@ -78,12 +78,12 @@ class CategoriaViewModel @Inject constructor(
                 categoriaRepository.eliminarCategoria(categoria)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Categoría eliminada ✅"
+                    message = "categoria_eliminada"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al eliminar categoría"
+                    error = e.message ?: "error_eliminar_categoria"
                 )
             }
         }

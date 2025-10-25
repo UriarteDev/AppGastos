@@ -58,7 +58,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Toca para cambiar foto"
+                        android:text="@string/toca_cambiar_foto"
                         android:textAppearance="?attr/textAppearanceCaption"
                         android:textColor="?attr/colorPrimary"
                         android:layout_marginBottom="16dp" />
@@ -67,7 +67,7 @@
                         android:id="@+id/tv_nombre"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Usuario"
+                        android:text="@string/perfil"
                         android:textAppearance="?attr/textAppearanceHeadline5"
                         android:layout_marginBottom="8dp" />
 
@@ -86,7 +86,7 @@
                 android:id="@+id/btn_sincronizar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sincronizar con la nube"
+                android:text="@string/sincronizar_nube"
                 android:layout_marginBottom="16dp"
                 app:icon="@android:drawable/ic_popup_sync"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
@@ -95,9 +95,17 @@
                 android:id="@+id/btn_cerrar_sesion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Cerrar Sesión"
+                android:text="@string/cerrar_sesion"
                 app:icon="@android:drawable/ic_lock_power_off"
                 style="@style/Widget.MaterialComponents.Button.TextButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cambiar_idioma"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cambiar_idioma"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
         </LinearLayout>
 

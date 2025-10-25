@@ -56,12 +56,12 @@ class HomeFragment : Fragment() {
             },
             onDeleteClick = { transaccion ->
                 MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Eliminar transacción")
-                    .setMessage("¿Estás seguro de que deseas eliminar '${transaccion.transaccion.descripcion}'?")
-                    .setPositiveButton("Eliminar") { _, _ ->
+                    .setTitle(getString(R.string.eliminar_transaccion))
+                    .setMessage(getString(R.string.estas_seguro_eliminar, transaccion.transaccion.descripcion))
+                    .setPositiveButton(getString(R.string.eliminar)) { _, _ ->
                         animarEliminacion(transaccion)
                     }
-                    .setNegativeButton("Cancelar", null)
+                    .setNegativeButton(getString(R.string.cancelar), null)
                     .show()
             }
         )
@@ -92,14 +92,20 @@ class HomeFragment : Fragment() {
             transaccionViewModel.uiState.collect { state ->
                 binding.swipeRefresh.isRefreshing = state.isLoading
 
-                state.message?.let { message ->
+                state.message?.let { messageKey ->
+                    val message = when (messageKey) {
+                        "transaccion_guardada" -> getString(R.string.transaccion_guardada)
+                        "transaccion_actualizada" -> getString(R.string.transaccion_actualizada)
+                        "transaccion_eliminada" -> getString(R.string.transaccion_eliminada)
+                        else -> messageKey
+                    }
                     Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
                     transaccionViewModel.limpiarMensaje()
                 }
 
                 state.error?.let { error ->
                     Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG)
-                        .setAction("Reintentar") { }
+                        .setAction(getString(R.string.reintentar)) { }
                         .show()
                     transaccionViewModel.limpiarMensaje()
                 }

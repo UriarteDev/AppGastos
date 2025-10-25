@@ -1,0 +1,216 @@
+
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Smart Balance</string>
+
+    <!-- Login & Auth -->
+    <string name="bienvenido">Welcome</string>
+    <string name="inicia_sesion_para_continuar">Sign in to continue</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirmar_password">Confirm Password</string>
+    <string name="iniciar_sesion">Sign In</string>
+    <string name="registrarse">Sign Up</string>
+    <string name="olvide_password">Forgot your password?</string>
+    <string name="continuar_con_google">Continue with Google</string>
+    <string name="no_tienes_cuenta">Don\'t have an account?</string>
+    <string name="ya_tienes_cuenta">Already have an account?</string>
+    <string name="nombre_completo">Full Name</string>
+    <string name="crear_cuenta">Create Account</string>
+    <string name="error_token_google">Could not obtain Google token</string>
+    <string name="error_google_signin">Google Sign-In error: %1$s</string>
+    <string name="login_cancelado">Sign in cancelled</string>
+    <string name="error_inicializar_google">Error initializing Google Sign-In</string>
+    <!-- Home -->
+    <string name="inicio">Home</string>
+    <string name="resumen_del_mes">Monthly Summary</string>
+    <string name="ingresos">Income</string>
+    <string name="gastos">Expenses</string>
+    <string name="saldo">Balance</string>
+    <string name="buscar_transacciones">Search transactions</string>
+    <string name="no_transacciones">No transactions registered</string>
+    <string name="toca_boton_agregar">Tap the + button to create your first transaction</string>
+    <string name="agregar_transaccion">Add Transaction</string>
+
+    <!-- Transactions -->
+    <string name="nueva_transaccion">New Transaction</string>
+    <string name="editar_transaccion">Edit Transaction</string>
+    <string name="eliminar_transaccion">Delete Transaction</string>
+    <string name="tipo">Type</string>
+    <string name="gasto">Expense</string>
+    <string name="ingreso">Income</string>
+    <string name="monto">Amount</string>
+    <string name="descripcion">Description</string>
+    <string name="categoria">Category</string>
+    <string name="fecha">Date</string>
+    <string name="hora">Time</string>
+    <string name="notas">Notes (optional)</string>
+    <string name="guardar">Save</string>
+    <string name="cancelar">Cancel</string>
+    <string name="eliminar">Delete</string>
+    <string name="estas_seguro_eliminar">Are you sure you want to delete \'%1$s\'?</string>
+    <string name="transaccion_guardada">Transaction saved ✅</string>
+    <string name="transaccion_actualizada">Transaction updated ✅</string>
+    <string name="transaccion_eliminada">Transaction deleted ✅</string>
+
+    <!-- Categories -->
+    <string name="categorias">Categories</string>
+    <string name="buscar_categorias">Search categories</string>
+    <string name="nueva_categoria">New Category</string>
+    <string name="editar_categoria">Edit Category</string>
+    <string name="eliminar_categoria">Delete Category</string>
+    <string name="no_categorias">No custom categories</string>
+    <string name="toca_boton_crear_categoria">Tap the + button to create one</string>
+    <string name="nombre">Name</string>
+    <string name="color">Color</string>
+    <string name="icono">Icon or Emoji</string>
+    <string name="predefinida">Default</string>
+    <string name="categoria_creada">Category created ✅</string>
+    <string name="categoria_actualizada">Category updated ✅</string>
+    <string name="categoria_eliminada">Category deleted ✅</string>
+
+    <!-- Statistics -->
+    <string name="estadisticas">Statistics</string>
+    <string name="semanal">Weekly</string>
+    <string name="quincenal">Biweekly</string>
+    <string name="mensual">Monthly</string>
+    <string name="anual">Annual</string>
+    <string name="ultimos_7_dias">Last 7 days</string>
+    <string name="ultimos_15_dias">Last 15 days</string>
+    <string name="ultimos_12_meses">Last 12 months</string>
+    <string name="ultimos_5_anos">Last 5 years</string>
+    <string name="resumen">Summary</string>
+    <string name="saldo_total">Total Balance</string>
+
+    <!-- Savings -->
+    <string name="ahorros">Savings</string>
+    <string name="mis_metas_ahorro">My Savings Goals</string>
+    <string name="no_metas_ahorro">No savings goals</string>
+    <string name="toca_boton_crear_meta">Tap the + button to create your first goal</string>
+    <string name="nueva_meta_ahorro">New Savings Goal</string>
+    <string name="meta_ahorro">Savings Goal</string>
+    <string name="meta">Goal</string>
+    <string name="agregar_aporte">Add Contribution</string>
+    <string name="nuevo_aporte">New Contribution</string>
+    <string name="monto_aporte">Contribution Amount</string>
+    <string name="nota_opcional">Note (optional)</string>
+    <string name="meta_creada">Savings goal created ✅</string>
+    <string name="meta_eliminada">Savings goal deleted</string>
+    <string name="aporte_registrado">Contribution registered ✅</string>
+    <string name="eliminar_meta_ahorro">Delete savings goal</string>
+    <string name="seguro_eliminar_meta">Are you sure you want to delete \'%1$s\'? All data will be lost.</string>
+
+    <!-- Profile -->
+    <string name="perfil">Profile</string>
+    <string name="cerrar_sesion">Sign Out</string>
+    <string name="sincronizar_nube">Sync with cloud</string>
+    <string name="estas_seguro_cerrar_sesion">Are you sure you want to sign out?</string>
+    <string name="datos_sincronizados">Data synced ✅</string>
+    <string name="foto_actualizada">Photo updated ✅</string>
+    <string name="toca_cambiar_foto">Tap to change photo</string>
+    <string name="sin_conexion_internet">⚠️ No internet connection</string>
+    <string name="cambiar_idioma">Change language</string>
+    <string name="seleccionar_idioma">Select language</string>
+
+    <!-- Validation Messages -->
+    <string name="ingrese_email">Enter your email</string>
+    <string name="email_invalido">Invalid email</string>
+    <string name="ingrese_password">Enter your password</string>
+    <string name="password_min_6">Password must be at least 6 characters</string>
+    <string name="passwords_no_coinciden">Passwords don\'t match</string>
+    <string name="ingrese_nombre">Enter your name</string>
+    <string name="nombre_muy_corto">Name is too short (minimum 2 characters)</string>
+    <string name="ingrese_monto">Enter an amount</string>
+    <string name="monto_invalido">Invalid amount</string>
+    <string name="monto_mayor_cero">Amount must be greater than 0</string>
+    <string name="ingrese_descripcion">Enter a description</string>
+    <string name="descripcion_muy_corta">Description is too short (minimum 3 characters)</string>
+    <string name="seleccione_categoria">Select a category</string>
+    <string name="ingrese_nombre_meta">Enter a name for your goal</string>
+
+    <!-- Common -->
+    <string name="aceptar">OK</string>
+    <string name="si">Yes</string>
+    <string name="no">No</string>
+    <string name="crear">Create</string>
+    <string name="actualizado">Updated ✅</string>
+    <string name="error">Error</string>
+    <string name="cargando">Loading...</string>
+
+    <!-- Months -->
+    <string name="enero">January</string>
+    <string name="febrero">February</string>
+    <string name="marzo">March</string>
+    <string name="abril">April</string>
+    <string name="mayo">May</string>
+    <string name="junio">June</string>
+    <string name="julio">July</string>
+    <string name="agosto">August</string>
+    <string name="septiembre">September</string>
+    <string name="octubre">October</string>
+    <string name="noviembre">November</string>
+    <string name="diciembre">December</string>
+
+    <!-- Short Months -->
+    <string name="ene">Jan</string>
+    <string name="feb">Feb</string>
+    <string name="mar">Mar</string>
+    <string name="abr">Apr</string>
+    <string name="may">May</string>
+    <string name="jun">Jun</string>
+    <string name="jul">Jul</string>
+    <string name="ago">Aug</string>
+    <string name="sep">Sep</string>
+    <string name="oct">Oct</string>
+    <string name="nov">Nov</string>
+    <string name="dic">Dec</string>
+
+    <!-- Categories Names -->
+    <string name="cat_comida">Food</string>
+    <string name="cat_transporte">Transport</string>
+    <string name="cat_ocio">Leisure</string>
+    <string name="cat_salud">Health</string>
+    <string name="cat_casa">Home</string>
+    <string name="cat_educacion">Education</string>
+    <string name="cat_ropa">Clothing</string>
+    <string name="cat_otros_gastos">Other Expenses</string>
+    <string name="cat_sueldo">Salary</string>
+    <string name="cat_freelance">Freelance</string>
+    <string name="cat_inversiones">Investments</string>
+    <string name="cat_regalos">Gifts</string>
+    <string name="cat_otros_ingresos">Other Income</string>
+
+    <!-- AdMob -->
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+
+    <!-- Password Recovery -->
+    <string name="recuperar_password">Recover Password</string>
+    <string name="email_recuperacion_enviado">Recovery email sent to %1$s</string>
+    <string name="ingresa_email_recuperacion">Enter your email and we\'ll send you a link to recover your password</string>
+    <string name="enviar">Send</string>
+    <string name="campo_requerido">This field is required</string>
+    <string name="password_debe_letra">Password must contain at least one letter</string>
+    <string name="password_debe_numero">Password must contain at least one number</string>
+    <string name="monto_muy_grande">Amount is too large</string>
+    <string name="nombre_muy_largo">Name is too long</string>
+    <string name="nombre_caracteres_invalidos">Name contains invalid characters</string>
+    <string name="confirme_password">Confirm your password</string>
+    <string name="nombre_meta_muy_corto">Name is too short (minimum 3 characters)</string>
+    <string name="nombre_meta_muy_largo">Name is too long (maximum 50 characters)</string>
+    <string name="nota_muy_larga">Note is too long (maximum 500 characters)</string>
+    <string name="error_usuario_no_autenticado">Error: User not authenticated</string>
+    <string name="ingresos_monto">Income: $ %1$s</string>
+    <string name="gastos_monto">Expenses: $ %1$s</string>
+    <string name="saldo_monto">Balance: $ %1$s</string>
+    <string name="reintentar">Retry</string>
+    <string name="error_guardar_transaccion">Error saving transaction</string>
+    <string name="error_actualizar_transaccion">Error updating transaction</string>
+    <string name="error_eliminar_transaccion">Error deleting transaction</string>
+    <string name="error_crear_ahorro">Error creating savings</string>
+    <string name="error_agregar_aporte">Error adding contribution</string>
+    <string name="error_eliminar_ahorro">Error deleting</string>
+    <string name="error_crear_categoria">Error creating category</string>
+    <string name="error_actualizar_categoria">Error updating category</string>
+    <string name="error_eliminar_categoria">Error deleting category</string>
+
+</resources>

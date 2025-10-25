@@ -194,12 +194,12 @@ class TransaccionViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Transacción guardada ✅"
+                    message = "transaccion_guardada" // Solo el key
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al guardar transacción"
+                    error = e.message ?: "error_guardar_transaccion"
                 )
             }
         }
@@ -234,12 +234,12 @@ class TransaccionViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Transacción actualizada ✅"
+                    message = "transaccion_actualizada"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al actualizar transacción"
+                    error = e.message ?: "error_actualizar_transaccion"
                 )
             }
         }
@@ -254,12 +254,12 @@ class TransaccionViewModel @Inject constructor(
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    message = "Transacción eliminada ✅"
+                    message = "transaccion_eliminada"
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Error al eliminar transacción"
+                    error = e.message ?: "error_eliminar_transaccion"
                 )
             }
         }

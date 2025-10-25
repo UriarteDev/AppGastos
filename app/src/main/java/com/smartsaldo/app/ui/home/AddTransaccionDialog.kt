@@ -1,6 +1,6 @@
 package com.smartsaldo.app.ui.home
 
-import android.R
+
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
@@ -12,6 +12,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
+import com.smartsaldo.app.R
 import com.smartsaldo.app.data.local.entities.Categoria
 import com.smartsaldo.app.data.local.entities.TipoTransaccion
 import com.smartsaldo.app.databinding.DialogAddTransaccionBinding
@@ -109,7 +110,7 @@ class AddTransaccionDialog : DialogFragment() {
 
         val adapter = ArrayAdapter(
             requireContext(),
-            R.layout.simple_dropdown_item_1line,
+            android.R.layout.simple_dropdown_item_1line,
             categoriasFiltradas.map { it.nombre }
         )
 
@@ -123,22 +124,34 @@ class AddTransaccionDialog : DialogFragment() {
     private fun validateTransaccion(): Boolean {
         binding.apply {
             // Validar monto
-            val isMontoValid = layoutMonto.validateAmount(maxAmount = 99999999.99)
+            val isMontoValid = layoutMonto.run {
+                val monto = etMonto.text.toString().toDoubleOrNull()
+                when {
+                    monto == null -> {
+                        error = getString(com.smartsaldo.app.R.string.ingrese_monto)
+                        false
+                    }
+                    monto <= 0 -> {
+                        error = getString(com.smartsaldo.app.R.string.monto_mayor_cero)
+                        false
+                    }
+                    else -> {
+                        clearError()
+                        true
+                    }
+                }
+            }
 
             // Validar descripción
             val isDescripcionValid = layoutDescripcion.run {
                 val desc = etDescripcion.text.toString().trim()
                 when {
                     desc.isBlank() -> {
-                        error = "Ingrese una descripción"
+                        error = getString(com.smartsaldo.app.R.string.ingrese_descripcion)
                         false
                     }
                     desc.length < 3 -> {
-                        error = "La descripción es muy corta (mínimo 3 caracteres)"
-                        false
-                    }
-                    desc.length > 100 -> {
-                        error = "La descripción es muy larga (máximo 100 caracteres)"
+                        error = getString(com.smartsaldo.app.R.string.descripcion_muy_corta)
                         false
                     }
                     else -> {
@@ -151,7 +164,7 @@ class AddTransaccionDialog : DialogFragment() {
             // Validar categoría
             val isCategoriaValid = layoutCategoria.run {
                 if (categoriaSeleccionada == null) {
-                    error = "Seleccione una categoría"
+                    error = getString(com.smartsaldo.app.R.string.seleccione_categoria)
                     false
                 } else {
                     clearError()
@@ -162,7 +175,7 @@ class AddTransaccionDialog : DialogFragment() {
             // Validar notas (opcional pero si existe, validar longitud)
             val isNotasValid = etNotas.text.toString().let { notas ->
                 if (notas.isNotBlank() && notas.length > 500) {
-                    Snackbar.make(root, "Las notas son muy largas (máximo 500 caracteres)", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(root, getString(R.string.nota_muy_larga), Snackbar.LENGTH_SHORT).show()
                     false
                 } else {
                     true

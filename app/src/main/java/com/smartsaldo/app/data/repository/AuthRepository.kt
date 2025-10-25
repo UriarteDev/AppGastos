@@ -1,23 +1,18 @@
 package com.smartsaldo.app.data.repository
 
+import android.content.Context
+import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import com.smartsaldo.app.data.local.dao.UsuarioDao
-import com.smartsaldo.app.data.local.dao.CategoriaDao
-import com.smartsaldo.app.data.local.dao.TransaccionDao
-import com.smartsaldo.app.data.local.dao.AhorroDao
-import kotlinx.coroutines.tasks.await
-import android.content.Context
-import com.smartsaldo.app.data.local.entities.Ahorro
-import com.smartsaldo.app.data.local.entities.Categoria
-import com.smartsaldo.app.data.local.entities.TipoTransaccion
-import com.smartsaldo.app.data.local.entities.Transaccion
-import com.smartsaldo.app.data.local.entities.Usuario
+import com.smartsaldo.app.R
+import com.smartsaldo.app.data.local.dao.*
+import com.smartsaldo.app.data.local.entities.*
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.tasks.await
 
 class AuthRepository(
     private val firebaseAuth: FirebaseAuth,
@@ -56,12 +51,12 @@ class AuthRepository(
             usuarioDao.deactivateAllUsers()
             usuarioDao.insertOrUpdate(usuario)
 
-            // Sincronizar desde Firestore
+            // ✅ SINCRONIZAR DESDE FIRESTORE
             sincronizarDesdeFirestore(firebaseUser.uid)
 
             Result.success(usuario)
         } catch (e: Exception) {
-            android.util.Log.e("AuthRepository", "Error en signInWithEmail", e)
+            Log.e("AuthRepository", "Error en signInWithEmail", e)
             Result.failure(e)
         }
     }
@@ -90,11 +85,10 @@ class AuthRepository(
 
             crearCategoriasDefault(usuario.uid)
 
-            // Intentar guardar en Firestore (no bloquear si falla)
             try {
                 guardarUsuarioEnFirestore(usuario)
             } catch (e: Exception) {
-                android.util.Log.w("AuthRepository", "No se pudo guardar en Firestore: ${e.message}")
+                Log.w("AuthRepository", "No se pudo guardar en Firestore: ${e.message}")
             }
 
             Result.success(usuario)
@@ -118,26 +112,22 @@ class AuthRepository(
                 isActive = true
             )
 
-            // Guardar localmente
             usuarioDao.deactivateAllUsers()
             usuarioDao.insertOrUpdate(usuario)
 
             if (result.additionalUserInfo?.isNewUser == true) {
-                // Usuario nuevo - crear categorías primero
                 crearCategoriasDefault(usuario.uid)
-
-                // Intentar guardar en Firestore (no bloquear si falla)
                 try {
                     guardarUsuarioEnFirestore(usuario)
                 } catch (e: Exception) {
-                    android.util.Log.w("AuthRepository", "No se pudo guardar en Firestore: ${e.message}")
+                    Log.w("AuthRepository", "No se pudo guardar en Firestore: ${e.message}")
                 }
             } else {
-                // Usuario existente, intentar sincronizar desde Firestore
+                // ✅ SINCRONIZAR DESDE FIRESTORE
                 try {
                     sincronizarDesdeFirestore(firebaseUser.uid)
                 } catch (e: Exception) {
-                    android.util.Log.w("AuthRepository", "No se pudo sincronizar desde Firestore: ${e.message}")
+                    Log.w("AuthRepository", "No se pudo sincronizar desde Firestore: ${e.message}")
                 }
             }
 
@@ -174,6 +164,76 @@ class AuthRepository(
                 "createdAt" to usuario.createdAt
             ))
             .await()
+    }
+
+    // ✅ MÉTODO MEJORADO DE SINCRONIZACIÓN (ahora público)
+    suspend fun sincronizarDesdeFirestore(usuarioId: String) {
+        try {
+            Log.d("AuthRepository", "🔄 Iniciando sincronización para usuario: $usuarioId")
+
+            // Sincronizar transacciones
+            val transaccionesSnapshot = firestore.collection("usuarios")
+                .document(usuarioId)
+                .collection("transacciones")
+                .get()
+                .await()
+
+            Log.d("AuthRepository", "📦 Transacciones encontradas: ${transaccionesSnapshot.documents.size}")
+
+            transaccionesSnapshot.documents.forEach { doc ->
+                try {
+                    val transaccion = Transaccion(
+                        id = doc.id.toLongOrNull() ?: 0,
+                        monto = doc.getDouble("monto") ?: 0.0,
+                        descripcion = doc.getString("descripcion") ?: "",
+                        notas = doc.getString("notas"),
+                        fecha = doc.getLong("fecha") ?: System.currentTimeMillis(),
+                        categoriaId = doc.getLong("categoriaId") ?: 1,
+                        usuarioId = usuarioId,
+                        tipo = TipoTransaccion.valueOf(doc.getString("tipo") ?: "GASTO"),
+                        createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
+                        updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis()
+                    )
+                    transaccionDao.insertTransaccion(transaccion)
+                    Log.d("AuthRepository", "✅ Transacción sincronizada: ${transaccion.descripcion}")
+                } catch (e: Exception) {
+                    Log.e("AuthRepository", "❌ Error sincronizando transacción: ${doc.id}", e)
+                }
+            }
+
+            // Sincronizar ahorros
+            val ahorrosSnapshot = firestore.collection("usuarios")
+                .document(usuarioId)
+                .collection("ahorros")
+                .get()
+                .await()
+
+            Log.d("AuthRepository", "💰 Ahorros encontrados: ${ahorrosSnapshot.documents.size}")
+
+            ahorrosSnapshot.documents.forEach { doc ->
+                try {
+                    val ahorro = Ahorro(
+                        id = doc.id.toLongOrNull() ?: 0,
+                        nombre = doc.getString("nombre") ?: "",
+                        metaMonto = doc.getDouble("metaMonto") ?: 0.0,
+                        montoActual = doc.getDouble("montoActual") ?: 0.0,
+                        usuarioId = usuarioId,
+                        createdAt = doc.getLong("createdAt") ?: System.currentTimeMillis(),
+                        updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis()
+                    )
+                    ahorroDao.insertAhorro(ahorro)
+                    Log.d("AuthRepository", "✅ Ahorro sincronizado: ${ahorro.nombre}")
+                } catch (e: Exception) {
+                    Log.e("AuthRepository", "❌ Error sincronizando ahorro: ${doc.id}", e)
+                }
+            }
+
+            Log.d("AuthRepository", "✅ Sincronización completada")
+
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "❌ Error en sincronización", e)
+            throw e
+        }
     }
 
     suspend fun sincronizarTransaccionesAFirestore(usuarioId: String) {
@@ -229,104 +289,106 @@ class AuthRepository(
         }
     }
 
-    suspend fun sincronizarDesdeFirestore(usuarioId: String) {
-        try {
-            val transaccionesSnapshot = firestore.collection("usuarios")
-                .document(usuarioId)
-                .collection("transacciones")
-                .get()
-                .await()
-
-            transaccionesSnapshot.documents.forEach { doc ->
-                val transaccion = Transaccion(
-                    id = doc.id.toLongOrNull() ?: 0,
-                    monto = doc.getDouble("monto") ?: 0.0,
-                    descripcion = doc.getString("descripcion") ?: "",
-                    notas = doc.getString("notas"),
-                    fecha = doc.getLong("fecha") ?: 0,
-                    categoriaId = doc.getLong("categoriaId") ?: 0,
-                    usuarioId = usuarioId,
-                    tipo = TipoTransaccion.valueOf(doc.getString("tipo") ?: "GASTO"),
-                    createdAt = doc.getLong("createdAt") ?: 0,
-                    updatedAt = doc.getLong("updatedAt") ?: 0
-                )
-                transaccionDao.insertTransaccion(transaccion)
-            }
-
-            val ahorrosSnapshot = firestore.collection("usuarios")
-                .document(usuarioId)
-                .collection("ahorros")
-                .get()
-                .await()
-
-            ahorrosSnapshot.documents.forEach { doc ->
-                val ahorro = Ahorro(
-                    id = doc.id.toLongOrNull() ?: 0,
-                    nombre = doc.getString("nombre") ?: "",
-                    metaMonto = doc.getDouble("metaMonto") ?: 0.0,
-                    montoActual = doc.getDouble("montoActual") ?: 0.0,
-                    usuarioId = usuarioId,
-                    createdAt = doc.getLong("createdAt") ?: 0,
-                    updatedAt = doc.getLong("updatedAt") ?: 0
-                )
-                ahorroDao.insertAhorro(ahorro)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
     private suspend fun crearCategoriasDefault(usuarioId: String) {
-        // Verificar si ya existen categorías predeterminadas
         val categoriasExistentes = categoriaDao.getCategorias(usuarioId).first()
         if (categoriasExistentes.isNotEmpty()) {
-            return // Ya existen, no crear más
+            return
         }
 
         val categorias = listOf(
             Categoria(
-                nombre = "Comida",
+                nombre = context.getString(R.string.cat_comida),
                 icono = "🍔",
                 color = "#FF5722",
                 tipo = "GASTO",
                 esDefault = true
             ),
             Categoria(
-                nombre = "Transporte",
+                nombre = context.getString(R.string.cat_transporte),
                 icono = "🚗",
                 color = "#2196F3",
                 tipo = "GASTO",
                 esDefault = true
             ),
             Categoria(
-                nombre = "Ocio",
+                nombre = context.getString(R.string.cat_ocio),
                 icono = "🎮",
                 color = "#9C27B0",
                 tipo = "GASTO",
                 esDefault = true
             ),
             Categoria(
-                nombre = "Salud",
+                nombre = context.getString(R.string.cat_salud),
                 icono = "🏥",
                 color = "#F44336",
                 tipo = "GASTO",
                 esDefault = true
             ),
             Categoria(
-                nombre = "Sueldo",
+                nombre = context.getString(R.string.cat_casa),
+                icono = "🏠",
+                color = "#795548",
+                tipo = "GASTO",
+                esDefault = true
+            ),
+            Categoria(
+                nombre = context.getString(R.string.cat_educacion),
+                icono = "📚",
+                color = "#3F51B5",
+                tipo = "GASTO",
+                esDefault = true
+            ),
+            Categoria(
+                nombre = context.getString(R.string.cat_ropa),
+                icono = "👔",
+                color = "#E91E63",
+                tipo = "GASTO",
+                esDefault = true
+            ),
+            Categoria(
+                nombre = context.getString(R.string.cat_otros_gastos),
+                icono = "📦",
+                color = "#607D8B",
+                tipo = "GASTO",
+                esDefault = true
+            ),
+            Categoria(
+                nombre = context.getString(R.string.cat_sueldo),
                 icono = "💼",
                 color = "#4CAF50",
                 tipo = "INGRESO",
                 esDefault = true
             ),
             Categoria(
-                nombre = "Freelance",
+                nombre = context.getString(R.string.cat_freelance),
                 icono = "💻",
                 color = "#00BCD4",
                 tipo = "INGRESO",
                 esDefault = true
+            ),
+            Categoria(
+                nombre = context.getString(R.string.cat_inversiones),
+                icono = "📈",
+                color = "#8BC34A",
+                tipo = "INGRESO",
+                esDefault = true
+            ),
+            Categoria(
+                nombre = context.getString(R.string.cat_regalos),
+                icono = "🎁",
+                color = "#FFEB3B",
+                tipo = "INGRESO",
+                esDefault = true
+            ),
+            Categoria(
+                nombre = context.getString(R.string.cat_otros_ingresos),
+                icono = "💰",
+                color = "#4CAF50",
+                tipo = "INGRESO",
+                esDefault = true
             )
         )
+
         categoriaDao.insertCategorias(categorias)
     }
 }

@@ -15,6 +15,7 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.google.android.material.chip.Chip
+import com.smartsaldo.app.R
 import com.smartsaldo.app.data.local.entities.TipoTransaccion
 import com.smartsaldo.app.databinding.FragmentEstadisticasBinding
 import com.smartsaldo.app.ui.home.TransaccionViewModel
@@ -90,10 +91,10 @@ class EstadisticasFragment : Fragment() {
     private fun cargarEstadisticas(periodo: Periodo) {
         viewLifecycleOwner.lifecycleScope.launch {
             when (periodo) {
-                Periodo.SEMANAL -> mostrarEstadisticasPorDias(7, "Últimos 7 días")
-                Periodo.QUINCENAL -> mostrarEstadisticasPorDias(15, "Últimos 15 días")
-                Periodo.MENSUAL -> mostrarEstadisticasPorMeses(12, "Últimos 12 meses")
-                Periodo.ANUAL -> mostrarEstadisticasPorAños(5, "Últimos 5 años")
+                Periodo.SEMANAL -> mostrarEstadisticasPorDias(7, getString(R.string.ultimos_7_dias))
+                Periodo.QUINCENAL -> mostrarEstadisticasPorDias(15, getString(R.string.ultimos_15_dias))
+                Periodo.MENSUAL -> mostrarEstadisticasPorMeses(12, getString(R.string.ultimos_12_meses))
+                Periodo.ANUAL -> mostrarEstadisticasPorAños(5, getString(R.string.ultimos_5_anos))
             }
         }
     }
@@ -243,13 +244,13 @@ class EstadisticasFragment : Fragment() {
         binding.apply {
             tvTituloEstadistica.text = titulo
 
-            val ingresosDataSet = BarDataSet(ingresos, "Ingresos").apply {
+            val ingresosDataSet = BarDataSet(ingresos, getString(R.string.ingresos)).apply {
                 color = Color.parseColor("#4CAF50")
                 valueTextColor = Color.BLACK
                 valueTextSize = 9f
             }
 
-            val gastosDataSet = BarDataSet(gastos, "Gastos").apply {
+            val gastosDataSet = BarDataSet(gastos, getString(R.string.gastos)).apply {
                 color = Color.parseColor("#F44336")
                 valueTextColor = Color.BLACK
                 valueTextSize = 9f
@@ -277,9 +278,9 @@ class EstadisticasFragment : Fragment() {
             val totalGastos = gastos.sumOf { it.y.toDouble() }
             val saldo = totalIngresos - totalGastos
 
-            tvTotalIngresos.text = "Ingresos: S/ ${String.format("%.2f", totalIngresos)}"
-            tvTotalGastos.text = "Gastos: S/ ${String.format("%.2f", totalGastos)}"
-            tvSaldoTotal.text = "Saldo: S/ ${String.format("%.2f", saldo)}"
+            tvTotalIngresos.text = getString(R.string.ingresos_monto, String.format("%.2f", totalIngresos))
+            tvTotalGastos.text = getString(R.string.gastos_monto, String.format("%.2f", totalGastos))
+            tvSaldoTotal.text = getString(R.string.saldo_monto, String.format("%.2f", saldo))
 
             tvSaldoTotal.setTextColor(
                 if (saldo >= 0) Color.parseColor("#4CAF50") else Color.parseColor("#F44336")
@@ -289,18 +290,18 @@ class EstadisticasFragment : Fragment() {
 
     private fun getMesNombre(mes: Int): String {
         return when (mes) {
-            0 -> "Ene"
-            1 -> "Feb"
-            2 -> "Mar"
-            3 -> "Abr"
-            4 -> "May"
-            5 -> "Jun"
-            6 -> "Jul"
-            7 -> "Ago"
-            8 -> "Sep"
-            9 -> "Oct"
-            10 -> "Nov"
-            11 -> "Dic"
+            0 -> getString(R.string.ene)
+            1 -> getString(R.string.feb)
+            2 -> getString(R.string.mar)
+            3 -> getString(R.string.abr)
+            4 -> getString(R.string.may)
+            5 -> getString(R.string.jun)
+            6 -> getString(R.string.jul)
+            7 -> getString(R.string.ago)
+            8 -> getString(R.string.sep)
+            9 -> getString(R.string.oct)
+            10 -> getString(R.string.nov)
+            11 -> getString(R.string.dic)
             else -> ""
         }
     }

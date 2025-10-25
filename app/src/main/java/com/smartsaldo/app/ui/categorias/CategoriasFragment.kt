@@ -97,7 +97,13 @@ class CategoriasFragment : Fragment() {
             categoriaViewModel.uiState.collect { state ->
                 binding.swipeRefresh.isRefreshing = state.isLoading
 
-                state.message?.let { message ->
+                state.message?.let { messageKey ->
+                    val message = when (messageKey) {
+                        "categoria_creada" -> getString(R.string.categoria_creada)
+                        "categoria_actualizada" -> getString(R.string.categoria_actualizada)
+                        "categoria_eliminada" -> getString(R.string.categoria_eliminada)
+                        else -> messageKey
+                    }
                     Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
                     categoriaViewModel.limpiarMensaje()
                 }
@@ -123,7 +129,7 @@ class CategoriasFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 delay(500)
                 binding.swipeRefresh.isRefreshing = false
-                Snackbar.make(binding.root, "Actualizado ✅", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, getString(R.string.categoria_actualizada), Snackbar.LENGTH_SHORT).show()
             }
         }
 
@@ -272,12 +278,12 @@ class CategoriasFragment : Fragment() {
 
     private fun mostrarDialogEliminar(categoria: Categoria) {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Eliminar categoría")
-            .setMessage("¿Estás seguro de que deseas eliminar '${categoria.nombre}'?")
-            .setPositiveButton("Eliminar") { _, _ ->
+            .setTitle(getString(R.string.eliminar_categoria))
+            .setMessage(getString(R.string.estas_seguro_eliminar, categoria.nombre))
+            .setPositiveButton(getString(R.string.eliminar)) { _, _ ->
                 animarEliminacionCategoria(categoria)
             }
-            .setNegativeButton("Cancelar", null)
+            .setNegativeButton(getString(R.string.cancelar), null)
             .show()
     }
 

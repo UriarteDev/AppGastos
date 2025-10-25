@@ -27,7 +27,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Categorías"
+                android:text="@string/categorias"
                 android:textAppearance="?attr/textAppearanceHeadline5"
                 android:layout_marginBottom="16dp" />
 
@@ -58,14 +58,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No tienes categorías personalizadas"
+                    android:text="@string/no_categorias"
                     android:textAppearance="?attr/textAppearanceHeadline6"
                     android:layout_marginTop="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Toca el botón + para crear una"
+                    android:text="@string/toca_boton_crear_categoria"
                     android:textAppearance="?attr/textAppearanceBody2"
                     android:textAlignment="center" />
 

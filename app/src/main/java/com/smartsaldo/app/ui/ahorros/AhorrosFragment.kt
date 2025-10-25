@@ -77,17 +77,19 @@ class AhorrosFragment : Fragment() {
             ahorroViewModel.uiState.collect { state ->
                 binding.swipeRefresh.isRefreshing = state.isLoading
 
-                state.message?.let { message ->
-                    Snackbar
-                        .make(binding.root, message, Snackbar.LENGTH_SHORT)
-                        .show()
+                state.message?.let { messageKey ->
+                    val message = when (messageKey) {
+                        "meta_creada" -> getString(R.string.meta_creada)
+                        "meta_eliminada" -> getString(R.string.meta_eliminada)
+                        "aporte_registrado" -> getString(R.string.aporte_registrado)
+                        else -> messageKey
+                    }
+                    Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
                     ahorroViewModel.limpiarMensaje()
                 }
 
                 state.error?.let { error ->
-                    Snackbar
-                        .make(binding.root, error, Snackbar.LENGTH_LONG)
-                        .show()
+                    Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
                     ahorroViewModel.limpiarMensaje()
                 }
             }
@@ -106,7 +108,7 @@ class AhorrosFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 kotlinx.coroutines.delay(500)
                 binding.swipeRefresh.isRefreshing = false
-                Snackbar.make(binding.root, "Actualizado ✅", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, getString(R.string.actualizado), Snackbar.LENGTH_SHORT).show()
             }
         }
 
@@ -124,12 +126,12 @@ class AhorrosFragment : Fragment() {
 
     private fun mostrarDialogEliminar(ahorro: Ahorro) {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Eliminar meta de ahorro")
-            .setMessage("¿Estás seguro de que deseas eliminar '${ahorro.nombre}'? Se perderán todos sus datos.")
-            .setPositiveButton("Eliminar") { _, _ ->
+            .setTitle(getString(R.string.eliminar_meta_ahorro))
+            .setMessage(getString(R.string.seguro_eliminar_meta, ahorro.nombre))
+            .setPositiveButton(getString(R.string.eliminar)) { _, _ ->
                 animarEliminacionAhorro(ahorro)
             }
-            .setNegativeButton("Cancelar", null)
+            .setNegativeButton(getString(R.string.cancelar), null)
             .show()
     }
 

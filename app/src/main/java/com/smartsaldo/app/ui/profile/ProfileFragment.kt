@@ -1,6 +1,7 @@
 package com.smartsaldo.app.ui.profile
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -25,6 +26,7 @@ import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.FragmentProfileBinding
 import com.smartsaldo.app.ui.auth.LoginActivity
 import com.smartsaldo.app.ui.shared.AuthViewModel
+import com.smartsaldo.app.utils.NetworkUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -82,9 +84,42 @@ class ProfileFragment : Fragment() {
             ivFotoPerfil.setOnClickListener {
                 seleccionarImagenPerfil()
             }
+
+            btnCambiarIdioma.setOnClickListener {
+                mostrarDialogCambiarIdioma()
+            }
         }
     }
 
+    private fun mostrarDialogCambiarIdioma() {
+        val idiomas = arrayOf("Español", "English")
+        val idiomasCodigos = arrayOf("es", "en")
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.seleccionar_idioma))
+            .setItems(idiomas) { _, which ->
+                cambiarIdioma(idiomasCodigos[which])
+            }
+            .show()
+    }
+
+    private fun cambiarIdioma(codigoIdioma: String) {
+        val locale = java.util.Locale(codigoIdioma)
+        java.util.Locale.setDefault(locale)
+
+        val config = resources.configuration
+        config.setLocale(locale)
+
+        requireContext().createConfigurationContext(config)
+        resources.updateConfiguration(config, resources.displayMetrics)
+
+        // Guardar preferencia
+        val prefs = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+        prefs.edit().putString("idioma", codigoIdioma).apply()
+
+        // Reiniciar actividad para aplicar cambios
+        requireActivity().recreate()
+    }
     private fun observeUser() {
         viewLifecycleOwner.lifecycleScope.launch {
             authViewModel.usuario.collect { usuario ->
@@ -173,11 +208,7 @@ class ProfileFragment : Fragment() {
                                     binding.progressBar.visibility = View.GONE
                                     binding.ivFotoPerfil.isEnabled = true
 
-                                    Snackbar.make(
-                                        binding.root,
-                                        "Foto actualizada ✅",
-                                        Snackbar.LENGTH_SHORT
-                                    ).show()
+                                    Snackbar.make(binding.root, getString(R.string.foto_actualizada), Snackbar.LENGTH_SHORT).show()
                                 }
                             }
                         }.addOnFailureListener { e ->
@@ -250,14 +281,33 @@ class ProfileFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Sincronizar desde Firestore a Room
-                authViewModel.sincronizarDatos()
+                // Verificar internet
+                if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.sin_conexion_internet),
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                    binding.progressBar.visibility = View.GONE
+                    return@launch
+                }
 
-                delay(1000) // Dar tiempo a que se complete
+                val usuario = authViewModel.usuario.value
+                if (usuario == null) {
+                    Snackbar.make(binding.root, "Usuario no encontrado", Snackbar.LENGTH_SHORT).show()
+                    binding.progressBar.visibility = View.GONE
+                    return@launch
+                }
+
+                // Sincronizar bidireccional
+                authViewModel.sincronizarDatos() // Descargar
+                kotlinx.coroutines.delay(1000)
+                authViewModel.sincronizarTransaccionesAFirestore(usuario.uid) // Subir transacciones
+                authViewModel.sincronizarAhorrosAFirestore(usuario.uid) // Subir ahorros
 
                 Snackbar.make(
                     binding.root,
-                    "Datos sincronizados ✅",
+                    getString(R.string.datos_sincronizados),
                     Snackbar.LENGTH_SHORT
                 ).show()
             } catch (e: Exception) {
@@ -274,12 +324,12 @@ class ProfileFragment : Fragment() {
 
     private fun mostrarDialogCerrarSesion() {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Cerrar sesión")
-            .setMessage("¿Estás seguro de que deseas cerrar sesión?")
-            .setPositiveButton("Cerrar sesión") { _, _ ->
+            .setTitle(getString(R.string.cerrar_sesion))
+            .setMessage(getString(R.string.estas_seguro_cerrar_sesion))
+            .setPositiveButton(getString(R.string.cerrar_sesion)) { _, _ ->
                 cerrarSesion()
             }
-            .setNegativeButton("Cancelar", null)
+            .setNegativeButton(getString(R.string.cancelar), null)
             .show()
     }
 
