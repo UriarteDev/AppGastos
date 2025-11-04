@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import com.smartsaldo.app.utils.LocaleHelper
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -46,6 +47,9 @@ class MainActivity : AppCompatActivity() {
         observarConectividad()
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase))
+    }
     private fun observarConectividad() {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 

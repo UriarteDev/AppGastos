@@ -7,8 +7,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.ItemAhorroBinding
 import com.smartsaldo.app.data.local.entities.Ahorro
+import com.smartsaldo.app.utils.CurrencyHelper
 
 class AhorroAdapter(
     private val onAporteClick: (Ahorro) -> Unit,
@@ -49,8 +51,8 @@ class AhorroAdapter(
                 root.translationY = 0f
 
                 tvNombreAhorro.text = ahorro.nombre
-                tvMontoActual.text = "S/ ${String.format("%.2f", ahorro.montoActual)}"
-                tvMetaMonto.text = "Meta: S/ ${String.format("%.2f", ahorro.metaMonto)}"
+                tvMontoActual.text = CurrencyHelper.formatAmount(itemView.context, ahorro.montoActual)
+                tvMetaMonto.text = "${itemView.context.getString(R.string.meta)}: ${CurrencyHelper.formatAmount(itemView.context, ahorro.metaMonto)}"
 
                 // Calcular porcentaje
                 val porcentaje = if (ahorro.metaMonto > 0) {

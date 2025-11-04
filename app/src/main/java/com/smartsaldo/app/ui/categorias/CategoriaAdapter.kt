@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.ItemCategoriaBinding
 import com.smartsaldo.app.data.local.entities.Categoria
 
@@ -62,7 +63,7 @@ class CategoriaAdapter(
 
                 if (categoria.esDefault) {
                     tvBadge.visibility = android.view.View.VISIBLE
-                    tvBadge.text = "Predefinida"
+                    tvBadge.text = itemView.context.getString(R.string.predefinida)
                     tvBadge.isClickable = false
                     tvBadge.isFocusable = false
                     btnEliminar.isEnabled = false

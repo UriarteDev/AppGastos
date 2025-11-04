@@ -92,20 +92,30 @@
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cambiar_idioma"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cambiar_idioma"
+                app:icon="@drawable/ic_language"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_cambiar_moneda"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cambiar_moneda"
+                android:layout_marginBottom="16dp"
+                app:icon="@drawable/ic_payments"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_cerrar_sesion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/cerrar_sesion"
                 app:icon="@android:drawable/ic_lock_power_off"
                 style="@style/Widget.MaterialComponents.Button.TextButton" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_cambiar_idioma"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/cambiar_idioma"
-                android:layout_marginBottom="16dp"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
         </LinearLayout>
 

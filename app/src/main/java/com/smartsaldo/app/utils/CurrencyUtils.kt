@@ -1,34 +1,28 @@
 package com.smartsaldo.app.utils
 
-import java.text.NumberFormat
-import java.util.*
+import android.content.Context
 
 object CurrencyUtils {
-
-    private const val CURRENCY_SYMBOL = "S/"
-    private val locale = Locale("es", "PE")
 
     /**
      * Formatea un monto con símbolo de moneda
      */
-    fun formatAmount(amount: Double): String {
-        return "$CURRENCY_SYMBOL ${String.format(locale, "%.2f", amount)}"
+    fun formatAmount(context: Context, amount: Double): String {
+        return CurrencyHelper.formatAmount(context, amount)
     }
 
     /**
      * Formatea un monto sin símbolo
      */
     fun formatAmountWithoutSymbol(amount: Double): String {
-        return String.format(locale, "%.2f", amount)
+        return String.format("%.2f", amount)
     }
 
     /**
      * Formatea un monto para mostrar en tarjetas (con separador de miles)
      */
-    fun formatAmountWithSeparator(amount: Double): String {
-        val formatter = NumberFormat.getCurrencyInstance(locale)
-        formatter.currency = Currency.getInstance("PEN")
-        return formatter.format(amount).replace("PEN", CURRENCY_SYMBOL)
+    fun formatAmountWithSeparator(context: Context, amount: Double): String {
+        return CurrencyHelper.formatAmountWithSeparator(context, amount)
     }
 
     /**
@@ -37,8 +31,7 @@ object CurrencyUtils {
     fun parseAmount(amountString: String): Double? {
         return try {
             amountString.trim()
-                .replace(CURRENCY_SYMBOL, "")
-                .replace(",", "")
+                .replace(Regex("[^0-9.]"), "")
                 .toDoubleOrNull()
         } catch (e: Exception) {
             null
@@ -85,9 +78,9 @@ object CurrencyUtils {
     /**
      * Formatea monto con signo según tipo
      */
-    fun formatAmountWithSign(amount: Double, isIncome: Boolean): String {
+    fun formatAmountWithSign(context: Context, amount: Double, isIncome: Boolean): String {
         val sign = if (isIncome) "+" else "-"
-        return "$sign${formatAmount(amount)}"
+        return "$sign${formatAmount(context, amount)}"
     }
 
     /**
@@ -111,8 +104,8 @@ object CurrencyUtils {
     /**
      * Formatea el cambio con signo
      */
-    fun formatChange(change: Double): String {
+    fun formatChange(context: Context, change: Double): String {
         val sign = if (change >= 0) "+" else ""
-        return "$sign${formatAmount(change)}"
+        return "$sign${formatAmount(context, change)}"
     }
 }

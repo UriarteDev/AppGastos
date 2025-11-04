@@ -21,6 +21,9 @@ interface CategoriaDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategoria(categoria: Categoria): Long
 
+    @Query("DELETE FROM categorias WHERE usuarioId = :usuarioId AND esDefault = 1")
+    suspend fun deleteCategoriasDefault(usuarioId: String)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategorias(categorias: List<Categoria>)
 

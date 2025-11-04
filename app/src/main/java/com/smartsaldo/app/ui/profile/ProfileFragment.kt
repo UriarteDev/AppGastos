@@ -25,7 +25,10 @@ import com.google.firebase.storage.FirebaseStorage
 import com.smartsaldo.app.R
 import com.smartsaldo.app.databinding.FragmentProfileBinding
 import com.smartsaldo.app.ui.auth.LoginActivity
+import com.smartsaldo.app.ui.categorias.CategoriaViewModel
 import com.smartsaldo.app.ui.shared.AuthViewModel
+import com.smartsaldo.app.utils.CurrencyHelper
+import com.smartsaldo.app.utils.LocaleHelper
 import com.smartsaldo.app.utils.NetworkUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -88,7 +91,38 @@ class ProfileFragment : Fragment() {
             btnCambiarIdioma.setOnClickListener {
                 mostrarDialogCambiarIdioma()
             }
+            btnCambiarMoneda.setOnClickListener {
+                mostrarDialogCambiarMoneda()
+            }
         }
+    }
+
+    private fun mostrarDialogCambiarMoneda() {
+        val monedas = CurrencyHelper.Currency.values()
+        val nombresMonedas = monedas.map { getString(it.nameResId) }.toTypedArray()
+
+        val monedaActual = CurrencyHelper.getSelectedCurrency(requireContext())
+        val selectedIndex = monedas.indexOf(monedaActual)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.seleccionar_moneda))
+            .setSingleChoiceItems(nombresMonedas, selectedIndex) { dialog, which ->
+                val monedaSeleccionada = monedas[which]
+                CurrencyHelper.setSelectedCurrency(requireContext(), monedaSeleccionada)
+
+                Snackbar.make(
+                    binding.root,
+                    getString(R.string.moneda_cambiada, getString(monedaSeleccionada.nameResId)),
+                    Snackbar.LENGTH_SHORT
+                ).show()
+
+                dialog.dismiss()
+
+                // Reiniciar actividad para aplicar cambios
+                requireActivity().recreate()
+            }
+            .setNegativeButton(getString(R.string.cancelar), null)
+            .show()
     }
 
     private fun mostrarDialogCambiarIdioma() {
@@ -104,21 +138,32 @@ class ProfileFragment : Fragment() {
     }
 
     private fun cambiarIdioma(codigoIdioma: String) {
-        val locale = java.util.Locale(codigoIdioma)
-        java.util.Locale.setDefault(locale)
+        // Guardar idioma usando LocaleHelper
+        LocaleHelper.setLocale(requireContext(), codigoIdioma)
 
-        val config = resources.configuration
-        config.setLocale(locale)
+        // ✅ Recrear categorías predefinidas
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                authViewModel.usuario.value?.let { usuario ->
+                    // Usar el CategoriaViewModel inyectado
+                    val categoriaViewModel: CategoriaViewModel by activityViewModels()
+                    categoriaViewModel.recrearCategoriasDefault(usuario.uid)
 
-        requireContext().createConfigurationContext(config)
-        resources.updateConfiguration(config, resources.displayMetrics)
+                    delay(500) // Esperar que se recreen
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileFragment", "Error recreando categorías", e)
+            }
+        }
 
-        // Guardar preferencia
-        val prefs = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
-        prefs.edit().putString("idioma", codigoIdioma).apply()
-
-        // Reiniciar actividad para aplicar cambios
-        requireActivity().recreate()
+        // Reiniciar la app
+        requireActivity().packageManager
+            .getLaunchIntentForPackage(requireActivity().packageName)
+            ?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(this)
+                requireActivity().finish()
+            } ?: requireActivity().recreate()
     }
     private fun observeUser() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -158,7 +203,7 @@ class ProfileFragment : Fragment() {
     private fun subirImagenPerfil(imageUri: Uri) {
         val usuario = auth.currentUser
         if (usuario == null) {
-            Snackbar.make(binding.root, "Error: Usuario no autenticado", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, getString(R.string.error_usuario_no_autenticado), Snackbar.LENGTH_SHORT).show()
             return
         }
 
@@ -212,26 +257,26 @@ class ProfileFragment : Fragment() {
                                 }
                             }
                         }.addOnFailureListener { e ->
-                            mostrarError("Error actualizando perfil: ${e.message}")
+                            mostrarError(getString(R.string.error_actualizando_perfil, e.message ?: ""))
                         }
                     }.addOnFailureListener { e ->
-                        mostrarError("Error obteniendo URL: ${e.message}")
+                        mostrarError(getString(R.string.error_obteniendo_url, e.message ?: ""))
                     }
                 }.addOnFailureListener { e ->
                     val mensaje = when {
                         e.message?.contains("Unable to obtain", ignoreCase = true) == true ->
-                            "Error de Storage. Verifica la configuración"
+                            getString(R.string.error_storage_config)
                         e.message?.contains("permission", ignoreCase = true) == true ->
-                            "Sin permisos. Contacta al administrador"
+                            getString(R.string.error_sin_permisos)
                         e.message?.contains("network", ignoreCase = true) == true ->
-                            "Error de red. Verifica tu conexión"
-                        else -> "Error al subir imagen: ${e.message}"
+                            getString(R.string.error_red)
+                        else -> getString(R.string.error_subir_imagen, e.message ?: "")
                     }
                     mostrarError(mensaje)
                 }
 
             } catch (e: Exception) {
-                mostrarError("Error al procesar imagen: ${e.message}")
+                mostrarError(getString(R.string.error_procesar_imagen, e.message ?: ""))
             }
         }
     }
@@ -339,7 +384,12 @@ class ProfileFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             authViewModel.signOut()
 
-            val intent = Intent(requireContext(), LoginActivity::class.java)
+            // ✅ Resetear setup_completed
+            val prefs = requireActivity().getSharedPreferences("settings", Context.MODE_PRIVATE)
+            prefs.edit().putBoolean("setup_completed", false).apply()
+
+            // Ir a WelcomeSetupActivity
+            val intent = Intent(requireContext(), com.smartsaldo.app.ui.welcome.WelcomeSetupActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             requireActivity().finish()

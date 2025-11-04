@@ -14,7 +14,9 @@ class CategoriaRepository(private val dao: CategoriaDao) {
     fun getCategoriasPorTipo(tipo: String, usuarioId: String): Flow<List<Categoria>> {
         return dao.getCategoriasPorTipo(tipo, usuarioId)
     }
-
+    suspend fun eliminarCategoriasDefault(usuarioId: String) {
+        dao.deleteCategoriasDefault(usuarioId)
+    }
     suspend fun insertarCategoria(categoria: Categoria): Long {
         return dao.insertCategoria(categoria)
     }

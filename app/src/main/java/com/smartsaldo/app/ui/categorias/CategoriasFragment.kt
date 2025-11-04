@@ -129,7 +129,7 @@ class CategoriasFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 delay(500)
                 binding.swipeRefresh.isRefreshing = false
-                Snackbar.make(binding.root, getString(R.string.categoria_actualizada), Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, getString(R.string.actualizado), Snackbar.LENGTH_SHORT).show()
             }
         }
 
@@ -169,9 +169,18 @@ class CategoriasFragment : Fragment() {
         val view = bindingDialog.root
 
         val coloresDisponibles = listOf(
-            "#FF5722" to "Naranja", "#2196F3" to "Azul", "#9C27B0" to "Púrpura", "#F44336" to "Rojo",
-            "#795548" to "Marrón", "#3F51B5" to "Índigo", "#E91E63" to "Rosado", "#4CAF50" to "Verde",
-            "#00BCD4" to "Cian", "#FF9800" to "Ámbar", "#607D8B" to "Gris azul", "#8BC34A" to "Verde claro"
+            "#FF5722" to getString(R.string.color_naranja),
+            "#2196F3" to getString(R.string.color_azul),
+            "#9C27B0" to getString(R.string.color_purpura),
+            "#F44336" to getString(R.string.color_rojo),
+            "#795548" to getString(R.string.color_marron),
+            "#3F51B5" to getString(R.string.color_indigo),
+            "#E91E63" to getString(R.string.color_rosado),
+            "#4CAF50" to getString(R.string.color_verde),
+            "#00BCD4" to getString(R.string.color_cian),
+            "#FF9800" to getString(R.string.color_ambar),
+            "#607D8B" to getString(R.string.color_gris_azul),
+            "#8BC34A" to getString(R.string.color_verde_claro)
         )
 
         var tipoSeleccionado = "GASTO"
@@ -229,19 +238,19 @@ class CategoriasFragment : Fragment() {
         }
 
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle(if (categoriaEditando != null) "Editar Categoría" else "Nueva Categoría")
+            .setTitle(if (categoriaEditando != null) getString(R.string.editar_categoria_titulo) else getString(R.string.nueva_categoria_titulo))
             .setView(view)
-            .setPositiveButton(if (categoriaEditando != null) "Guardar" else "Crear") { _, _ ->
+            .setPositiveButton(if (categoriaEditando != null) getString(R.string.guardar) else getString(R.string.crear)) { _, _ ->
                 val nombre = bindingDialog.etNombre.text.toString().trim()
                 val icono = bindingDialog.etIcono.text.toString().trim()
 
                 if (nombre.isBlank()) {
-                    Snackbar.make(binding.root, "Ingrese un nombre", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, getString(R.string.ingrese_nombre_categoria), Snackbar.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
 
                 if (icono.isBlank()) {
-                    Snackbar.make(binding.root, "Ingrese un emoji", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, getString(R.string.ingrese_emoji), Snackbar.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
 
@@ -267,7 +276,7 @@ class CategoriasFragment : Fragment() {
                     categoriaViewModel.crearCategoria(categoria)
                 }
             }
-            .setNegativeButton("Cancelar", null)
+            .setNegativeButton(getString(R.string.cancelar), null)
             .show()
     }
 

@@ -142,6 +142,9 @@ class AuthRepository(
         firebaseAuth.signOut()
         googleSignInClient.signOut().await()
         usuarioDao.deactivateAllUsers()
+
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("setup_completed", false).apply()
     }
 
     suspend fun resetPassword(email: String): Result<Unit> {

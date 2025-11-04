@@ -19,6 +19,7 @@ import com.smartsaldo.app.R
 import com.smartsaldo.app.data.local.entities.TipoTransaccion
 import com.smartsaldo.app.databinding.FragmentEstadisticasBinding
 import com.smartsaldo.app.ui.home.TransaccionViewModel
+import com.smartsaldo.app.utils.CurrencyHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -278,9 +279,18 @@ class EstadisticasFragment : Fragment() {
             val totalGastos = gastos.sumOf { it.y.toDouble() }
             val saldo = totalIngresos - totalGastos
 
-            tvTotalIngresos.text = getString(R.string.ingresos_monto, String.format("%.2f", totalIngresos))
-            tvTotalGastos.text = getString(R.string.gastos_monto, String.format("%.2f", totalGastos))
-            tvSaldoTotal.text = getString(R.string.saldo_monto, String.format("%.2f", saldo))
+            tvTotalIngresos.text = getString(
+                R.string.ingresos_monto,
+                CurrencyHelper.formatAmount(requireContext(), totalIngresos)
+            )
+            tvTotalGastos.text = getString(
+                R.string.gastos_monto,
+                CurrencyHelper.formatAmount(requireContext(), totalGastos)
+            )
+            tvSaldoTotal.text = getString(
+                R.string.saldo_monto,
+                CurrencyHelper.formatAmount(requireContext(), saldo)
+            )
 
             tvSaldoTotal.setTextColor(
                 if (saldo >= 0) Color.parseColor("#4CAF50") else Color.parseColor("#F44336")

@@ -16,6 +16,7 @@ import com.smartsaldo.app.R
 import kotlinx.coroutines.launch
 import com.smartsaldo.app.databinding.FragmentHomeBinding
 import com.smartsaldo.app.data.local.dao.EstadisticaMensual
+import com.smartsaldo.app.utils.CurrencyHelper
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -118,7 +119,7 @@ class HomeFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 kotlinx.coroutines.delay(500)
                 binding.swipeRefresh.isRefreshing = false
-                Snackbar.make(binding.root, "Actualizado ✅", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, getString(R.string.actualizado), Snackbar.LENGTH_SHORT).show()
             }
         }
 
@@ -188,9 +189,9 @@ class HomeFragment : Fragment() {
     private fun updateResumenCard(estadisticas: EstadisticaMensual?) {
         if (estadisticas != null) {
             binding.apply {
-                tvTotalIngresos.text = "S/ ${String.format("%.2f", estadisticas.totalIngresos)}"
-                tvTotalGastos.text = "S/ ${String.format("%.2f", estadisticas.totalGastos)}"
-                tvSaldoDisponible.text = "S/ ${String.format("%.2f", estadisticas.saldo)}"
+                tvTotalIngresos.text = CurrencyHelper.formatAmount(requireContext(), estadisticas.totalIngresos)
+                tvTotalGastos.text = CurrencyHelper.formatAmount(requireContext(), estadisticas.totalGastos)
+                tvSaldoDisponible.text = CurrencyHelper.formatAmount(requireContext(), estadisticas.saldo)
 
                 val colorSaldo = if (estadisticas.saldo >= 0) {
                     R.color.green_500

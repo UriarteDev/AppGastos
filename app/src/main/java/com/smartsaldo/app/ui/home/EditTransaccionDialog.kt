@@ -15,6 +15,7 @@ import com.smartsaldo.app.data.local.entities.Categoria
 import com.smartsaldo.app.data.local.entities.TipoTransaccion
 import com.smartsaldo.app.data.local.entities.TransaccionConCategoria
 import com.smartsaldo.app.databinding.DialogAddTransaccionBinding
+import com.smartsaldo.app.utils.CurrencyHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -135,7 +136,7 @@ class EditTransaccionDialog : DialogFragment() {
                 chipGrupoTipo.check(chipIngreso.id)
             }
 
-            etMonto.setText(String.format("%.2f", monto))
+            etMonto.setText(CurrencyHelper.formatAmount(requireContext(), monto))
             etDescripcion.setText(descripcion)
             etNotas.setText(notas)
 

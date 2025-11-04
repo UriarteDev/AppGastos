@@ -2,24 +2,19 @@ package com.smartsaldo.app
 
 import android.app.Application
 import android.content.Context
+import com.smartsaldo.app.utils.LocaleHelper
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class SmartSaldoApplication : Application(){
+class SmartSaldoApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Aplicar idioma guardado al iniciar la app
+        LocaleHelper.onAttach(this)
+    }
 
-        // Cargar idioma guardado
-        val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val idioma = prefs.getString("idioma", "es") ?: "es"
-
-        val locale = java.util.Locale(idioma)
-        java.util.Locale.setDefault(locale)
-
-        val config = resources.configuration
-        config.setLocale(locale)
-        createConfigurationContext(config)
-        resources.updateConfiguration(config, resources.displayMetrics)
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(base))
     }
 }

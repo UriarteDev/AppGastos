@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.smartsaldo.app.databinding.ItemTransaccionBinding
 import com.smartsaldo.app.data.local.entities.TransaccionConCategoria
 import com.smartsaldo.app.data.local.entities.TipoTransaccion
+import com.smartsaldo.app.utils.CurrencyHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -60,7 +61,7 @@ class TransaccionAdapter(
                 tvFecha.text = dateFormat.format(Date(transaccion.fecha))
                 tvHora.text = timeFormat.format(Date(transaccion.fecha))
 
-                val montoTexto = "S/ ${String.format("%.2f", transaccion.monto)}"
+                val montoTexto = CurrencyHelper.formatAmount(itemView.context, transaccion.monto)
                 when (transaccion.tipo) {
                     TipoTransaccion.INGRESO -> {
                         tvMonto.text = "+$montoTexto"

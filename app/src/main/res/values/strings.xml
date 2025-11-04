@@ -199,9 +199,9 @@
     <string name="nombre_meta_muy_largo">El nombre es muy largo (máximo 50 caracteres)</string>
     <string name="nota_muy_larga">La nota es muy larga (máximo 500 caracteres)</string>
     <string name="error_usuario_no_autenticado">Error: Usuario no autenticado</string>
-    <string name="ingresos_monto">Ingresos: S/ %1$s</string>
-    <string name="gastos_monto">Gastos: S/ %1$s</string>
-    <string name="saldo_monto">Saldo: S/ %1$s</string>
+    <string name="ingresos_monto">Ingresos: %1$s</string>
+    <string name="gastos_monto">Gastos: %1$s</string>
+    <string name="saldo_monto">Saldo: %1$s</string>
     <string name="reintentar">Reintentar</string>
     <string name="error_guardar_transaccion">Error al guardar transacción</string>
     <string name="error_actualizar_transaccion">Error al actualizar transacción</string>
@@ -213,4 +213,60 @@
     <string name="error_actualizar_categoria">Error al actualizar categoría</string>
     <string name="error_eliminar_categoria">Error al eliminar categoría</string>
 
+    <!-- Colores -->
+    <string name="color_naranja">Naranja</string>
+    <string name="color_azul">Azul</string>
+    <string name="color_purpura">Púrpura</string>
+    <string name="color_rojo">Rojo</string>
+    <string name="color_marron">Marrón</string>
+    <string name="color_indigo">Índigo</string>
+    <string name="color_rosado">Rosado</string>
+    <string name="color_verde">Verde</string>
+    <string name="color_cian">Cian</string>
+    <string name="color_ambar">Ámbar</string>
+    <string name="color_gris_azul">Gris azul</string>
+    <string name="color_verde_claro">Verde claro</string>
+
+    <!-- Diálogos de categoría -->
+    <string name="editar_categoria_titulo">Editar Categoría</string>
+    <string name="nueva_categoria_titulo">Nueva Categoría</string>
+    <string name="ingrese_nombre_categoria">Ingrese un nombre</string>
+    <string name="ingrese_emoji">Ingrese un emoji</string>
+
+    <!-- Mensajes de error de subida de imagen -->
+    <string name="error_actualizando_perfil">Error actualizando perfil: %1$s</string>
+    <string name="error_obteniendo_url">Error obteniendo URL: %1$s</string>
+    <string name="error_storage_config">Error de Storage. Verifica la configuración</string>
+    <string name="error_sin_permisos">Sin permisos. Contacta al administrador</string>
+    <string name="error_red">Error de red. Verifica tu conexión</string>
+    <string name="error_subir_imagen">Error al subir imagen: %1$s</string>
+    <string name="error_procesar_imagen">Error al procesar imagen: %1$s</string>
+
+    <!-- Monedas -->
+    <string name="currency_pen">Sol Peruano (S/)</string>
+    <string name="currency_usd">Dólar Estadounidense ($)</string>
+    <string name="currency_eur">Euro (€)</string>
+    <string name="currency_gbp">Libra Esterlina (£)</string>
+    <string name="currency_jpy">Yen Japonés (¥)</string>
+    <string name="currency_cad">Dólar Canadiense (C$)</string>
+    <string name="currency_aud">Dólar Australiano (A$)</string>
+    <string name="currency_chf">Franco Suizo (Fr)</string>
+    <string name="currency_cny">Yuan Chino (¥)</string>
+    <string name="currency_mxn">Peso Mexicano (Mex$)</string>
+    <string name="currency_brl">Real Brasileño (R$)</string>
+    <string name="currency_ars">Peso Argentino (AR$)</string>
+    <string name="currency_clp">Peso Chileno (CL$)</string>
+    <string name="currency_cop">Peso Colombiano (COL$)</string>
+    <string name="seleccionar_moneda">Seleccionar moneda</string>
+    <string name="moneda_cambiada">Moneda cambiada a %1$s</string>
+    <string name="cambiar_moneda">Cambiar moneda</string>
+
+    <!-- Welcome Setup -->
+    <string name="bienvenida_setup">¡Bienvenido a Smart Saldo!</string>
+    <string name="configurar_preferencias">Configura tus preferencias antes de comenzar</string>
+    <string name="selecciona_tu_idioma">Selecciona tu idioma</string>
+    <string name="selecciona_tu_moneda">Selecciona tu moneda</string>
+    <string name="continuar">Continuar</string>
+    <string name="idioma_espanol">Español</string>
+    <string name="idioma_ingles">English</string>
 </resources>

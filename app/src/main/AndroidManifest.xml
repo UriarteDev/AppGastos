@@ -51,6 +51,10 @@
             android:name=".ui.auth.LoginActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.welcome.WelcomeSetupActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

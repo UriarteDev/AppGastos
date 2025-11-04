@@ -1,6 +1,7 @@
 package com.smartsaldo.app.ui.main
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -10,6 +11,7 @@ import com.smartsaldo.app.R
 import com.smartsaldo.app.ui.shared.AuthState
 import com.smartsaldo.app.ui.shared.AuthViewModel
 import com.smartsaldo.app.ui.auth.LoginActivity
+import com.smartsaldo.app.ui.welcome.WelcomeSetupActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -38,16 +40,30 @@ class SplashActivity : AppCompatActivity() {
                         finish()
                     }
                     is AuthState.Unauthenticated -> {
-                        // No autenticado → LoginActivity
-                        val intent = Intent(this@SplashActivity, LoginActivity::class.java)
-                        startActivity(intent)
-                        finish()
+                        // No autenticado → Verificar si completó setup
+                        if (isSetupCompleted()) {
+                            // Ya configuró → LoginActivity
+                            val intent = Intent(this@SplashActivity, LoginActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            // Primera vez → WelcomeSetupActivity
+                            val intent = Intent(this@SplashActivity, WelcomeSetupActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
                     }
                     is AuthState.Error -> {
-                        // Error → LoginActivity
-                        val intent = Intent(this@SplashActivity, LoginActivity::class.java)
-                        startActivity(intent)
-                        finish()
+                        // Error → Verificar setup igual
+                        if (isSetupCompleted()) {
+                            val intent = Intent(this@SplashActivity, LoginActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            val intent = Intent(this@SplashActivity, WelcomeSetupActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
                     }
                     is AuthState.Loading -> {
                         // Esperando verificación
@@ -55,5 +71,10 @@ class SplashActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun isSetupCompleted(): Boolean {
+        val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        return prefs.getBoolean("setup_completed", false)
     }
 }
