@@ -51,7 +51,7 @@ class AuthRepository(
             usuarioDao.deactivateAllUsers()
             usuarioDao.insertOrUpdate(usuario)
 
-            // ✅ SINCRONIZAR DESDE FIRESTORE
+            // Sincronizar datos
             sincronizarDesdeFirestore(firebaseUser.uid)
 
             Result.success(usuario)
@@ -83,6 +83,7 @@ class AuthRepository(
             usuarioDao.deactivateAllUsers()
             usuarioDao.insertOrUpdate(usuario)
 
+            // Crear categorías predefinidas
             crearCategoriasDefault(usuario.uid)
 
             try {
@@ -116,6 +117,7 @@ class AuthRepository(
             usuarioDao.insertOrUpdate(usuario)
 
             if (result.additionalUserInfo?.isNewUser == true) {
+                // Usuario nuevo: crear categorías predefinidas
                 crearCategoriasDefault(usuario.uid)
                 try {
                     guardarUsuarioEnFirestore(usuario)
@@ -123,11 +125,19 @@ class AuthRepository(
                     Log.w("AuthRepository", "No se pudo guardar en Firestore: ${e.message}")
                 }
             } else {
-                // ✅ SINCRONIZAR DESDE FIRESTORE
+                // Usuario existente: sincronizar desde Firebase
                 try {
                     sincronizarDesdeFirestore(firebaseUser.uid)
+
+                    // Si no tiene categorías, crearlas
+                    val categoriasExistentes = categoriaDao.getCategorias(usuario.uid).first()
+                    if (categoriasExistentes.isEmpty()) {
+                        Log.w("AuthRepository", "⚠️ No hay categorías, creando predefinidas...")
+                        crearCategoriasDefault(usuario.uid)
+                    }
                 } catch (e: Exception) {
-                    Log.w("AuthRepository", "No se pudo sincronizar desde Firestore: ${e.message}")
+                    Log.w("AuthRepository", "Error sincronizando: ${e.message}")
+                    crearCategoriasDefault(usuario.uid)
                 }
             }
 
@@ -169,12 +179,65 @@ class AuthRepository(
             .await()
     }
 
-    // ✅ MÉTODO MEJORADO DE SINCRONIZACIÓN (ahora público)
     suspend fun sincronizarDesdeFirestore(usuarioId: String) {
         try {
-            Log.d("AuthRepository", "🔄 Iniciando sincronización para usuario: $usuarioId")
+            Log.d("AuthRepository", "🔄 Iniciando sincronización para: $usuarioId")
 
-            // Sincronizar transacciones
+            // 1️⃣ Sincronizar categorías predefinidas desde Firebase
+            val categoriasDefaultSnapshot = firestore.collection("usuarios")
+                .document(usuarioId)
+                .collection("categorias_default")
+                .get()
+                .await()
+
+            if (categoriasDefaultSnapshot.documents.isNotEmpty()) {
+                Log.d("AuthRepository", "🏷️ Categorías predefinidas en Firebase: ${categoriasDefaultSnapshot.documents.size}")
+
+                categoriasDefaultSnapshot.documents.forEach { doc ->
+                    try {
+                        val categoria = Categoria(
+                            id = doc.id.toLongOrNull() ?: 0,
+                            nombre = doc.getString("nombre") ?: "",
+                            icono = doc.getString("icono") ?: "📦",
+                            color = doc.getString("color") ?: "#607D8B",
+                            tipo = doc.getString("tipo") ?: "GASTO",
+                            esDefault = true,
+                            usuarioId = null
+                        )
+                        categoriaDao.insertCategoria(categoria)
+                    } catch (e: Exception) {
+                        Log.e("AuthRepository", "❌ Error sincronizando categoría default: ${doc.id}", e)
+                    }
+                }
+            }
+
+            // 2️⃣ Sincronizar categorías personalizadas
+            val categoriasSnapshot = firestore.collection("usuarios")
+                .document(usuarioId)
+                .collection("categorias")
+                .get()
+                .await()
+
+            Log.d("AuthRepository", "🏷️ Categorías personalizadas: ${categoriasSnapshot.documents.size}")
+
+            categoriasSnapshot.documents.forEach { doc ->
+                try {
+                    val categoria = Categoria(
+                        id = doc.id.toLongOrNull() ?: 0,
+                        nombre = doc.getString("nombre") ?: "",
+                        icono = doc.getString("icono") ?: "📦",
+                        color = doc.getString("color") ?: "#607D8B",
+                        tipo = doc.getString("tipo") ?: "GASTO",
+                        esDefault = false,
+                        usuarioId = usuarioId
+                    )
+                    categoriaDao.insertCategoria(categoria)
+                } catch (e: Exception) {
+                    Log.e("AuthRepository", "❌ Error sincronizando categoría: ${doc.id}", e)
+                }
+            }
+
+            // 3️⃣ Sincronizar transacciones
             val transaccionesSnapshot = firestore.collection("usuarios")
                 .document(usuarioId)
                 .collection("transacciones")
@@ -198,13 +261,12 @@ class AuthRepository(
                         updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis()
                     )
                     transaccionDao.insertTransaccion(transaccion)
-                    Log.d("AuthRepository", "✅ Transacción sincronizada: ${transaccion.descripcion}")
                 } catch (e: Exception) {
                     Log.e("AuthRepository", "❌ Error sincronizando transacción: ${doc.id}", e)
                 }
             }
 
-            // Sincronizar ahorros
+            // 4️⃣ Sincronizar ahorros
             val ahorrosSnapshot = firestore.collection("usuarios")
                 .document(usuarioId)
                 .collection("ahorros")
@@ -225,7 +287,6 @@ class AuthRepository(
                         updatedAt = doc.getLong("updatedAt") ?: System.currentTimeMillis()
                     )
                     ahorroDao.insertAhorro(ahorro)
-                    Log.d("AuthRepository", "✅ Ahorro sincronizado: ${ahorro.nombre}")
                 } catch (e: Exception) {
                     Log.e("AuthRepository", "❌ Error sincronizando ahorro: ${doc.id}", e)
                 }
@@ -295,103 +356,60 @@ class AuthRepository(
     private suspend fun crearCategoriasDefault(usuarioId: String) {
         val categoriasExistentes = categoriaDao.getCategorias(usuarioId).first()
         if (categoriasExistentes.isNotEmpty()) {
+            Log.d("AuthRepository", "✅ Categorías ya existen")
             return
         }
 
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val idiomaGuardado = prefs.getString("idioma", "es") ?: "es"
+
+        Log.d("AuthRepository", "🌍 Creando categorías en idioma: $idiomaGuardado")
+
+        val contextoConIdioma = com.smartsaldo.app.utils.LocaleHelper.onAttach(context)
+
         val categorias = listOf(
-            Categoria(
-                nombre = context.getString(R.string.cat_comida),
-                icono = "🍔",
-                color = "#FF5722",
-                tipo = "GASTO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_transporte),
-                icono = "🚗",
-                color = "#2196F3",
-                tipo = "GASTO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_ocio),
-                icono = "🎮",
-                color = "#9C27B0",
-                tipo = "GASTO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_salud),
-                icono = "🏥",
-                color = "#F44336",
-                tipo = "GASTO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_casa),
-                icono = "🏠",
-                color = "#795548",
-                tipo = "GASTO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_educacion),
-                icono = "📚",
-                color = "#3F51B5",
-                tipo = "GASTO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_ropa),
-                icono = "👔",
-                color = "#E91E63",
-                tipo = "GASTO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_otros_gastos),
-                icono = "📦",
-                color = "#607D8B",
-                tipo = "GASTO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_sueldo),
-                icono = "💼",
-                color = "#4CAF50",
-                tipo = "INGRESO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_freelance),
-                icono = "💻",
-                color = "#00BCD4",
-                tipo = "INGRESO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_inversiones),
-                icono = "📈",
-                color = "#8BC34A",
-                tipo = "INGRESO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_regalos),
-                icono = "🎁",
-                color = "#FFEB3B",
-                tipo = "INGRESO",
-                esDefault = true
-            ),
-            Categoria(
-                nombre = context.getString(R.string.cat_otros_ingresos),
-                icono = "💰",
-                color = "#4CAF50",
-                tipo = "INGRESO",
-                esDefault = true
-            )
+            // ✅ IMPORTANTE: usuarioId se pone null para que NO haya FK constraint
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_comida), icono = "🍔", color = "#FF5722", tipo = "GASTO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_transporte), icono = "🚗", color = "#2196F3", tipo = "GASTO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_ocio), icono = "🎮", color = "#9C27B0", tipo = "GASTO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_salud), icono = "🏥", color = "#F44336", tipo = "GASTO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_casa), icono = "🏠", color = "#795548", tipo = "GASTO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_educacion), icono = "📚", color = "#3F51B5", tipo = "GASTO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_ropa), icono = "👔", color = "#E91E63", tipo = "GASTO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_otros_gastos), icono = "📦", color = "#607D8B", tipo = "GASTO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_sueldo), icono = "💼", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_freelance), icono = "💻", color = "#00BCD4", tipo = "INGRESO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_inversiones), icono = "📈", color = "#8BC34A", tipo = "INGRESO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_regalos), icono = "🎁", color = "#FFEB3B", tipo = "INGRESO", esDefault = true, usuarioId = null),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_otros_ingresos), icono = "💰", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null)
         )
 
+        Log.d("AuthRepository", "📝 Primera categoría: ${categorias[0].nombre}")
+
         categoriaDao.insertCategorias(categorias)
+
+        // Guardar en Firebase con el usuarioId
+        try {
+            categorias.forEachIndexed { index, categoria ->
+                val id = (index + 1).toLong()
+                firestore.collection("usuarios")
+                    .document(usuarioId)
+                    .collection("categorias_default")
+                    .document(id.toString())
+                    .set(mapOf(
+                        "id" to id,
+                        "nombre" to categoria.nombre,
+                        "icono" to categoria.icono,
+                        "color" to categoria.color,
+                        "tipo" to categoria.tipo,
+                        "esDefault" to true,
+                        "usuarioId" to usuarioId // ✅ Guardar el usuario en Firebase
+                    ))
+                    .await()
+            }
+            Log.d("AuthRepository", "✅ Categorías guardadas en Firebase")
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Error guardando en Firebase", e)
+        }
     }
 }

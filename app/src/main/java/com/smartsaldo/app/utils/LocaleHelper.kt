@@ -35,7 +35,12 @@ object LocaleHelper {
      */
     fun getPersistedLanguage(context: Context): String {
         val preferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        return preferences.getString(SELECTED_LANGUAGE, "en") ?: "en"
+
+        // Buscar primero el idioma definitivo, luego el temporal, por defecto español
+        return preferences.getString("idioma", null)
+            ?: preferences.getString(SELECTED_LANGUAGE, null)
+            ?: preferences.getString("temp_language", "es")
+            ?: "es"
     }
 
     /**

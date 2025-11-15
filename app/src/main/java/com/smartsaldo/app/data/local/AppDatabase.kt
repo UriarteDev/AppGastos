@@ -19,7 +19,7 @@ import com.smartsaldo.app.data.local.entities.Usuario
 
 @Database(
     entities = [Usuario::class, Categoria::class, Transaccion::class, Ahorro::class, AporteAhorro::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -110,6 +110,44 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                android.util.Log.d("AppDatabase", "🔄 Migrando de versión 6 a 7: Eliminando foreign key de categorias")
+
+                // 1️⃣ Crear tabla nueva SIN foreign key
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `categorias_new` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `nombre` TEXT NOT NULL,
+                        `icono` TEXT NOT NULL,
+                        `color` TEXT NOT NULL,
+                        `tipo` TEXT NOT NULL,
+                        `esDefault` INTEGER NOT NULL,
+                        `usuarioId` TEXT
+                    )
+                """
+                )
+
+                // 2️⃣ Copiar todos los datos de la tabla vieja
+                database.execSQL(
+                    """
+                    INSERT INTO `categorias_new` (`id`, `nombre`, `icono`, `color`, `tipo`, `esDefault`, `usuarioId`)
+                    SELECT `id`, `nombre`, `icono`, `color`, `tipo`, `esDefault`, `usuarioId`
+                    FROM `categorias`
+                """
+                )
+
+                // 3️⃣ Eliminar tabla vieja
+                database.execSQL("DROP TABLE `categorias`")
+
+                // 4️⃣ Renombrar la nueva tabla
+                database.execSQL("ALTER TABLE `categorias_new` RENAME TO `categorias`")
+
+                android.util.Log.d("AppDatabase", "✅ Migración 6→7 completada")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -117,7 +155,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "smartsaldo_db"
                 )
-                    .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

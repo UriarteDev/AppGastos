@@ -90,8 +90,9 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideCategoriaRepository(
-        categoriaDao: CategoriaDao
+        categoriaDao: CategoriaDao,
+        @ApplicationContext context: Context
     ): CategoriaRepository {
-        return CategoriaRepository(categoriaDao)
+        return CategoriaRepository(categoriaDao, context)
     }
 }

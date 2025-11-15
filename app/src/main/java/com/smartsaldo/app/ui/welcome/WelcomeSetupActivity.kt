@@ -87,7 +87,10 @@ class WelcomeSetupActivity : AppCompatActivity() {
 
         binding.spinnerIdioma.adapter = adapter
 
-        // ✅ Seleccionar idioma actual
+        // ✅ Seleccionar español por defecto
+        val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        idiomaSeleccionado = prefs.getString("temp_language", "es") ?: "es"
+
         val posicionActual = idiomas.indexOfFirst { it.codigo == idiomaSeleccionado }
         if (posicionActual >= 0) {
             binding.spinnerIdioma.setSelection(posicionActual)
@@ -95,26 +98,20 @@ class WelcomeSetupActivity : AppCompatActivity() {
 
         binding.spinnerIdioma.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                // ✅ Ignorar si está inicializando
                 if (isInitializing) return
 
                 val nuevoIdioma = idiomas[position].codigo
 
-                // Solo cambiar si es diferente
                 if (nuevoIdioma != idiomaSeleccionado) {
                     idiomaSeleccionado = nuevoIdioma
 
-                    // Guardar temporalmente
+                    // ✅ Guardar y aplicar inmediatamente
                     val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
                     prefs.edit().putString("temp_language", idiomaSeleccionado).apply()
 
-                    // Aplicar idioma
                     LocaleHelper.setLocale(this@WelcomeSetupActivity, idiomaSeleccionado)
 
-                    // Marcar que va a recrear
                     isInitializing = true
-
-                    // Recrear activity
                     recreate()
                 }
             }

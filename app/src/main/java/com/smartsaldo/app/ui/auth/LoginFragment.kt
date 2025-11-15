@@ -40,43 +40,53 @@ class LoginFragment : Fragment() {
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                val idToken = account?.idToken
+        binding.progressBar.visibility = View.GONE
+        binding.btnLogin.isEnabled = true
+        binding.btnGoogleSignIn.isEnabled = true
 
-                if (idToken != null) {
-                    authViewModel.signInWithGoogle(idToken)
-                } else {
+        when (result.resultCode) {
+            Activity.RESULT_OK -> {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account = task.getResult(ApiException::class.java)
+                    val idToken = account?.idToken
+
+                    if (idToken != null) {
+                        binding.progressBar.visibility = View.VISIBLE
+                        binding.btnLogin.isEnabled = false
+                        binding.btnGoogleSignIn.isEnabled = false
+
+                        authViewModel.signInWithGoogle(idToken)
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.error_token_google),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: ApiException) {
+                    android.util.Log.e("LoginFragment", "Google sign-in failed", e)
                     Toast.makeText(
                         requireContext(),
-                        getString(R.string.error_token_google),
+                        getString(R.string.error_google_signin, e.message ?: "Unknown"),
                         Toast.LENGTH_SHORT
                     ).show()
-                    binding.progressBar.visibility = View.GONE
-                    binding.btnLogin.isEnabled = true
-                    binding.btnGoogleSignIn.isEnabled = true
                 }
-            } catch (e: ApiException) {
+            }
+            Activity.RESULT_CANCELED -> {
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.error_google_signin, e.message),
+                    getString(R.string.login_cancelado),
                     Toast.LENGTH_SHORT
                 ).show()
-                binding.progressBar.visibility = View.GONE
-                binding.btnLogin.isEnabled = true
-                binding.btnGoogleSignIn.isEnabled = true
             }
-        } else {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.login_cancelado),
-                Toast.LENGTH_SHORT
-            ).show()
-            binding.progressBar.visibility = View.GONE
-            binding.btnLogin.isEnabled = true
-            binding.btnGoogleSignIn.isEnabled = true
+            else -> {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.error_inicializar_google),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -164,16 +174,41 @@ class LoginFragment : Fragment() {
     }
 
     private fun iniciarGoogleSignIn() {
-        googleSignInClient?.signOut()?.addOnCompleteListener {
-            val signInIntent = googleSignInClient?.signInIntent
-            if (signInIntent != null) {
-                googleSignInLauncher.launch(signInIntent)
+        binding.progressBar.visibility = View.VISIBLE
+        binding.btnLogin.isEnabled = false
+        binding.btnGoogleSignIn.isEnabled = false
+
+        googleSignInClient?.signOut()?.addOnCompleteListener { signOutTask ->
+            if (signOutTask.isSuccessful) {
+                googleSignInClient?.revokeAccess()?.addOnCompleteListener {
+                    val signInIntent = googleSignInClient?.signInIntent
+                    if (signInIntent != null) {
+                        googleSignInLauncher.launch(signInIntent)
+                    } else {
+                        binding.progressBar.visibility = View.GONE
+                        binding.btnLogin.isEnabled = true
+                        binding.btnGoogleSignIn.isEnabled = true
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.error_inicializar_google),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             } else {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.error_inicializar_google),
-                    Toast.LENGTH_SHORT
-                ).show()
+                val signInIntent = googleSignInClient?.signInIntent
+                if (signInIntent != null) {
+                    googleSignInLauncher.launch(signInIntent)
+                } else {
+                    binding.progressBar.visibility = View.GONE
+                    binding.btnLogin.isEnabled = true
+                    binding.btnGoogleSignIn.isEnabled = true
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.error_inicializar_google),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
@@ -249,6 +284,10 @@ class LoginFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         googleSignInClient?.signOut()
         googleSignInClient = null
     }

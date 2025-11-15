@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "590560104917-qksgj4thabjcm5rkr4omjqjqfhlvjqge.apps.googleusercontent.com",
+          "client_id": "590560104917-lditolsmjenco9n4nanj737nngvgl6c8.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.smartsaldo.app",
-            "certificate_hash": "13c4a1c6fc5112c6c08980371d10b508e799612d"
+            "certificate_hash": "0f5fd6f1772571662a6286561e83f953e9919efb"
           }
         },
         {

@@ -12,5 +12,5 @@ data class Categoria(
     val color: String,
     val tipo: String, // "GASTO" o "INGRESO"
     val esDefault: Boolean = true,
-    val usuarioId: String? = null // null para categorías predefinidas
+    val usuarioId: String? = null // null para categorías predefinidas, no-null para personalizadas
 )

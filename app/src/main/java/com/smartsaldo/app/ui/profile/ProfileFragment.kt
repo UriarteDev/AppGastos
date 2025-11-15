@@ -138,32 +138,36 @@ class ProfileFragment : Fragment() {
     }
 
     private fun cambiarIdioma(codigoIdioma: String) {
-        // Guardar idioma usando LocaleHelper
-        LocaleHelper.setLocale(requireContext(), codigoIdioma)
-
-        // ✅ Recrear categorías predefinidas
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // 1️⃣ Guardar el nuevo idioma
+                LocaleHelper.setLocale(requireContext(), codigoIdioma)
+
+                // 2️⃣ Esperar a que el contexto se actualice
+                delay(300)
+
+                // 3️⃣ Recrear categorías predefinidas con el nuevo idioma
                 authViewModel.usuario.value?.let { usuario ->
-                    // Usar el CategoriaViewModel inyectado
                     val categoriaViewModel: CategoriaViewModel by activityViewModels()
                     categoriaViewModel.recrearCategoriasDefault(usuario.uid)
-
-                    delay(500) // Esperar que se recreen
+                    android.util.Log.d("ProfileFragment", "✅ Categorías actualizadas")
                 }
+
+                // 4️⃣ Reiniciar la app
+                delay(200)
+                requireActivity().packageManager
+                    .getLaunchIntentForPackage(requireActivity().packageName)
+                    ?.apply {
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(this)
+                        requireActivity().finish()
+                    } ?: requireActivity().recreate()
+
             } catch (e: Exception) {
-                Log.e("ProfileFragment", "Error recreando categorías", e)
+                Log.e("ProfileFragment", "❌ Error cambiando idioma", e)
+                Snackbar.make(binding.root, "Error cambiando idioma", Snackbar.LENGTH_SHORT).show()
             }
         }
-
-        // Reiniciar la app
-        requireActivity().packageManager
-            .getLaunchIntentForPackage(requireActivity().packageName)
-            ?.apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(this)
-                requireActivity().finish()
-            } ?: requireActivity().recreate()
     }
     private fun observeUser() {
         viewLifecycleOwner.lifecycleScope.launch {
