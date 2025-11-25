@@ -89,30 +89,6 @@ class CategoriaViewModel @Inject constructor(
         }
     }
 
-    fun recrearCategoriasDefault(usuarioId: String) {
-        viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(isLoading = true)
-
-                // Eliminar categorías predefinidas
-                categoriaRepository.eliminarCategoriasDefault(usuarioId)
-
-                // Recrear con el idioma actual
-                categoriaRepository.crearCategoriasDefault(usuarioId)
-
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    message = "categorias_recreadas"
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "error_recrear_categorias"
-                )
-            }
-        }
-    }
-
     fun limpiarMensaje() {
         _uiState.value = _uiState.value.copy(message = null, error = null)
     }

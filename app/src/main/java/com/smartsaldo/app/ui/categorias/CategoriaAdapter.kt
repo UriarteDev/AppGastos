@@ -50,7 +50,10 @@ class CategoriaAdapter(
                 root.translationX = 0f
                 root.translationY = 0f
 
-                tvNombreCategoria.text = categoria.nombre
+                tvNombreCategoria.text = com.smartsaldo.app.utils.CategoriaHelper.getNombreMostrar(
+                    itemView.context,
+                    categoria
+                )
                 tvTipo.text = categoria.tipo
                 tvIcono.text = categoria.icono
 

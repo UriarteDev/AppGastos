@@ -57,7 +57,11 @@ class TransaccionAdapter(
                 root.scaleY = 1f
 
                 tvDescripcion.text = transaccion.descripcion
-                tvCategoria.text = categoria?.nombre ?: "Sin categoría"
+                tvCategoria.text = if (categoria != null) {
+                    com.smartsaldo.app.utils.CategoriaHelper.getNombreMostrar(itemView.context, categoria)
+                } else {
+                    "Sin categoría"
+                }
                 tvFecha.text = dateFormat.format(Date(transaccion.fecha))
                 tvHora.text = timeFormat.format(Date(transaccion.fecha))
 

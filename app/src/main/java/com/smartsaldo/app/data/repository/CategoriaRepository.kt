@@ -164,20 +164,19 @@ class CategoriaRepository(
         }
 
         val categoriasDefault = listOf(
-            // ✅ usuarioId = null para evitar FK constraint
-            Categoria(nombre = context.getString(R.string.cat_comida), icono = "🍔", color = "#FF5722", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_transporte), icono = "🚗", color = "#2196F3", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_ocio), icono = "🎮", color = "#9C27B0", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_salud), icono = "🏥", color = "#F44336", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_casa), icono = "🏠", color = "#795548", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_educacion), icono = "📚", color = "#3F51B5", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_ropa), icono = "👔", color = "#E91E63", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_otros_gastos), icono = "📦", color = "#607D8B", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_sueldo), icono = "💼", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_freelance), icono = "💻", color = "#00BCD4", tipo = "INGRESO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_inversiones), icono = "📈", color = "#8BC34A", tipo = "INGRESO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_regalos), icono = "🎁", color = "#FFEB3B", tipo = "INGRESO", esDefault = true, usuarioId = null),
-            Categoria(nombre = context.getString(R.string.cat_otros_ingresos), icono = "💰", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null)
+            Categoria(nombre = context.getString(R.string.cat_comida), icono = "🍔", color = "#FF5722", tipo = "GASTO", esDefault = true, usuarioId = null, key = "food"),
+            Categoria(nombre = context.getString(R.string.cat_transporte), icono = "🚗", color = "#2196F3", tipo = "GASTO", esDefault = true, usuarioId = null, key = "transport"),
+            Categoria(nombre = context.getString(R.string.cat_ocio), icono = "🎮", color = "#9C27B0", tipo = "GASTO", esDefault = true, usuarioId = null, key = "leisure"),
+            Categoria(nombre = context.getString(R.string.cat_salud), icono = "🏥", color = "#F44336", tipo = "GASTO", esDefault = true, usuarioId = null, key = "health"),
+            Categoria(nombre = context.getString(R.string.cat_casa), icono = "🏠", color = "#795548", tipo = "GASTO", esDefault = true, usuarioId = null, key = "home"),
+            Categoria(nombre = context.getString(R.string.cat_educacion), icono = "📚", color = "#3F51B5", tipo = "GASTO", esDefault = true, usuarioId = null, key = "education"),
+            Categoria(nombre = context.getString(R.string.cat_ropa), icono = "👔", color = "#E91E63", tipo = "GASTO", esDefault = true, usuarioId = null, key = "clothing"),
+            Categoria(nombre = context.getString(R.string.cat_otros_gastos), icono = "📦", color = "#607D8B", tipo = "GASTO", esDefault = true, usuarioId = null, key = "other_expenses"),
+            Categoria(nombre = context.getString(R.string.cat_sueldo), icono = "💼", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "salary"),
+            Categoria(nombre = context.getString(R.string.cat_freelance), icono = "💻", color = "#00BCD4", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "freelance"),
+            Categoria(nombre = context.getString(R.string.cat_inversiones), icono = "📈", color = "#8BC34A", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "investments"),
+            Categoria(nombre = context.getString(R.string.cat_regalos), icono = "🎁", color = "#FFEB3B", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "gifts"),
+            Categoria(nombre = context.getString(R.string.cat_otros_ingresos), icono = "💰", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "other_income")
         )
 
         insertarCategorias(categoriasDefault)

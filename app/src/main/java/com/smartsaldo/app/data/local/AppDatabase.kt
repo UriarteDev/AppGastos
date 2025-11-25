@@ -19,7 +19,7 @@ import com.smartsaldo.app.data.local.entities.Usuario
 
 @Database(
     entities = [Usuario::class, Categoria::class, Transaccion::class, Ahorro::class, AporteAhorro::class],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -148,6 +148,18 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Agregar columna 'key' a la tabla 'categorias'
+                database.execSQL(
+                    """
+            ALTER TABLE `categorias` 
+            ADD COLUMN `key` TEXT
+            """.trimIndent()
+                )
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -155,7 +167,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "smartsaldo_db"
                 )
-                    .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

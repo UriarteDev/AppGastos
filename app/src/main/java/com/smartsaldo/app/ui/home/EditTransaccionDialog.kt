@@ -162,10 +162,13 @@ class EditTransaccionDialog : DialogFragment() {
             it.tipo == tipo.name
         }
 
+        // ✅ Usar nombres traducidos
         val adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_dropdown_item_1line,
-            categoriasFiltradas.map { it.nombre }
+            categoriasFiltradas.map {
+                com.smartsaldo.app.utils.CategoriaHelper.getNombreMostrar(requireContext(), it)
+            }
         )
 
         binding.spinnerCategoria.setAdapter(adapter)

@@ -140,20 +140,10 @@ class ProfileFragment : Fragment() {
     private fun cambiarIdioma(codigoIdioma: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // 1️⃣ Guardar el nuevo idioma
+                // Guardar el nuevo idioma
                 LocaleHelper.setLocale(requireContext(), codigoIdioma)
 
-                // 2️⃣ Esperar a que el contexto se actualice
-                delay(300)
-
-                // 3️⃣ Recrear categorías predefinidas con el nuevo idioma
-                authViewModel.usuario.value?.let { usuario ->
-                    val categoriaViewModel: CategoriaViewModel by activityViewModels()
-                    categoriaViewModel.recrearCategoriasDefault(usuario.uid)
-                    android.util.Log.d("ProfileFragment", "✅ Categorías actualizadas")
-                }
-
-                // 4️⃣ Reiniciar la app
+                // Reiniciar la app para aplicar cambios
                 delay(200)
                 requireActivity().packageManager
                     .getLaunchIntentForPackage(requireActivity().packageName)

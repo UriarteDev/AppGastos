@@ -53,6 +53,7 @@ class AuthRepository(
 
             // Sincronizar datos
             sincronizarDesdeFirestore(firebaseUser.uid)
+            actualizarKeysDeCategoriasExistentes(firebaseUser.uid)
 
             Result.success(usuario)
         } catch (e: Exception) {
@@ -128,6 +129,7 @@ class AuthRepository(
                 // Usuario existente: sincronizar desde Firebase
                 try {
                     sincronizarDesdeFirestore(firebaseUser.uid)
+                    actualizarKeysDeCategoriasExistentes(firebaseUser.uid)
 
                     // Si no tiene categorías, crearlas
                     val categoriasExistentes = categoriaDao.getCategorias(usuario.uid).first()
@@ -195,6 +197,7 @@ class AuthRepository(
 
                 categoriasDefaultSnapshot.documents.forEach { doc ->
                     try {
+                        val key = doc.getString("key")
                         val categoria = Categoria(
                             id = doc.id.toLongOrNull() ?: 0,
                             nombre = doc.getString("nombre") ?: "",
@@ -202,8 +205,10 @@ class AuthRepository(
                             color = doc.getString("color") ?: "#607D8B",
                             tipo = doc.getString("tipo") ?: "GASTO",
                             esDefault = true,
-                            usuarioId = null
+                            usuarioId = null,
+                            key = key  // ← AGREGAR ESTA LÍNEA
                         )
+                        Log.d("AuthRepository", "📦 Sincronizando: ${categoria.nombre}, key: ${categoria.key}")  // ← AGREGAR ESTE LOG
                         categoriaDao.insertCategoria(categoria)
                     } catch (e: Exception) {
                         Log.e("AuthRepository", "❌ Error sincronizando categoría default: ${doc.id}", e)
@@ -355,40 +360,36 @@ class AuthRepository(
 
     private suspend fun crearCategoriasDefault(usuarioId: String) {
         val categoriasExistentes = categoriaDao.getCategorias(usuarioId).first()
-        if (categoriasExistentes.isNotEmpty()) {
-            Log.d("AuthRepository", "✅ Categorías ya existen")
+
+        // Si ya hay categorías default, no crear nuevas
+        if (categoriasExistentes.any { it.esDefault }) {
+            Log.d("AuthRepository", "✅ Categorías default ya existen (${categoriasExistentes.filter { it.esDefault }.size})")
             return
         }
 
-        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val idiomaGuardado = prefs.getString("idioma", "es") ?: "es"
-
-        Log.d("AuthRepository", "🌍 Creando categorías en idioma: $idiomaGuardado")
-
+        Log.d("AuthRepository", "🆕 Creando categorías default por primera vez...")
         val contextoConIdioma = com.smartsaldo.app.utils.LocaleHelper.onAttach(context)
 
         val categorias = listOf(
-            // ✅ IMPORTANTE: usuarioId se pone null para que NO haya FK constraint
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_comida), icono = "🍔", color = "#FF5722", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_transporte), icono = "🚗", color = "#2196F3", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_ocio), icono = "🎮", color = "#9C27B0", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_salud), icono = "🏥", color = "#F44336", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_casa), icono = "🏠", color = "#795548", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_educacion), icono = "📚", color = "#3F51B5", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_ropa), icono = "👔", color = "#E91E63", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_otros_gastos), icono = "📦", color = "#607D8B", tipo = "GASTO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_sueldo), icono = "💼", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_freelance), icono = "💻", color = "#00BCD4", tipo = "INGRESO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_inversiones), icono = "📈", color = "#8BC34A", tipo = "INGRESO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_regalos), icono = "🎁", color = "#FFEB3B", tipo = "INGRESO", esDefault = true, usuarioId = null),
-            Categoria(nombre = contextoConIdioma.getString(R.string.cat_otros_ingresos), icono = "💰", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null)
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_comida), icono = "🍔", color = "#FF5722", tipo = "GASTO", esDefault = true, usuarioId = null, key = "food"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_transporte), icono = "🚗", color = "#2196F3", tipo = "GASTO", esDefault = true, usuarioId = null, key = "transport"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_ocio), icono = "🎮", color = "#9C27B0", tipo = "GASTO", esDefault = true, usuarioId = null, key = "leisure"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_salud), icono = "🏥", color = "#F44336", tipo = "GASTO", esDefault = true, usuarioId = null, key = "health"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_casa), icono = "🏠", color = "#795548", tipo = "GASTO", esDefault = true, usuarioId = null, key = "home"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_educacion), icono = "📚", color = "#3F51B5", tipo = "GASTO", esDefault = true, usuarioId = null, key = "education"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_ropa), icono = "👔", color = "#E91E63", tipo = "GASTO", esDefault = true, usuarioId = null, key = "clothing"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_otros_gastos), icono = "📦", color = "#607D8B", tipo = "GASTO", esDefault = true, usuarioId = null, key = "other_expenses"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_sueldo), icono = "💼", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "salary"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_freelance), icono = "💻", color = "#00BCD4", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "freelance"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_inversiones), icono = "📈", color = "#8BC34A", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "investments"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_regalos), icono = "🎁", color = "#FFEB3B", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "gifts"),
+            Categoria(nombre = contextoConIdioma.getString(R.string.cat_otros_ingresos), icono = "💰", color = "#4CAF50", tipo = "INGRESO", esDefault = true, usuarioId = null, key = "other_income")
         )
 
-        Log.d("AuthRepository", "📝 Primera categoría: ${categorias[0].nombre}")
-
         categoriaDao.insertCategorias(categorias)
+        Log.d("AuthRepository", "✅ ${categorias.size} categorías creadas con keys")
 
-        // Guardar en Firebase con el usuarioId
+        // Guardar en Firebase
         try {
             categorias.forEachIndexed { index, categoria ->
                 val id = (index + 1).toLong()
@@ -403,13 +404,59 @@ class AuthRepository(
                         "color" to categoria.color,
                         "tipo" to categoria.tipo,
                         "esDefault" to true,
-                        "usuarioId" to usuarioId // ✅ Guardar el usuario en Firebase
+                        "usuarioId" to usuarioId,
+                        "key" to categoria.key
                     ))
                     .await()
             }
             Log.d("AuthRepository", "✅ Categorías guardadas en Firebase")
         } catch (e: Exception) {
             Log.e("AuthRepository", "Error guardando en Firebase", e)
+        }
+    }
+
+    private suspend fun actualizarKeysDeCategoriasExistentes(usuarioId: String) {
+        try {
+            val categoriasExistentes = categoriaDao.getCategorias(usuarioId).first()
+            val categoriasSinKey = categoriasExistentes.filter { it.esDefault && it.key == null }
+
+            if (categoriasSinKey.isEmpty()) {
+                Log.d("AuthRepository", "✅ Todas las categorías ya tienen keys")
+                return
+            }
+
+            Log.d("AuthRepository", "🔄 Actualizando ${categoriasSinKey.size} categorías sin key...")
+
+            // Mapeo de nombres a keys (soporta español e inglés)
+            val keysMapping = mapOf(
+                "Comida" to "food", "Food" to "food",
+                "Transporte" to "transport", "Transport" to "transport",
+                "Ocio" to "leisure", "Leisure" to "leisure",
+                "Salud" to "health", "Health" to "health",
+                "Casa" to "home", "Home" to "home",
+                "Educación" to "education", "Education" to "education",
+                "Ropa" to "clothing", "Clothing" to "clothing",
+                "Otros Gastos" to "other_expenses", "Other Expenses" to "other_expenses",
+                "Sueldo" to "salary", "Salary" to "salary",
+                "Freelance" to "freelance",
+                "Inversiones" to "investments", "Investments" to "investments",
+                "Regalos" to "gifts", "Gifts" to "gifts",
+                "Otros Ingresos" to "other_income", "Other Income" to "other_income"
+            )
+
+            categoriasSinKey.forEach { categoria ->
+                val nuevoKey = keysMapping[categoria.nombre]
+                if (nuevoKey != null) {
+                    Log.d("AuthRepository", "✏️ '${categoria.nombre}' -> key: '$nuevoKey'")
+                    categoriaDao.updateCategoria(categoria.copy(key = nuevoKey))
+                } else {
+                    Log.w("AuthRepository", "⚠️ No se encontró key para: ${categoria.nombre}")
+                }
+            }
+
+            Log.d("AuthRepository", "✅ Keys actualizados correctamente")
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "❌ Error actualizando keys", e)
         }
     }
 }
