@@ -225,42 +225,42 @@ A glimpse of the main screens of the app:
 ### 🏠 Home
 Shows the user’s current balance, recent transactions and quick actions.
 
-![Home](screenshots/Home.jpg)
+<img src="screenshots/Home.jpg" alt="Home" width="300"/>
 
 ---
 
 ### 📊 Statistics
 Visual summary of income and expenses over time (daily, monthly, yearly).
 
-![Statistics](screenshots/Statistics.jpg)
+<img src="screenshots/Statistics.jpg" alt="Statistics" width="300"/>
 
 ---
 
 ### 👤 Profile
 User profile, language switching, currency selection and sync options.
 
-![Profile](screenshots/Profile.jpg)
+<img src="screenshots/Profile.jpg" alt="Profile" width="300"/>
 
 ---
 
 ### 🗂️ Categories
 List of income and expense categories with support for search, add, edit, and delete.
 
-![Categories](screenshots/Categories.jpg)
+<img src="screenshots/Categories.jpg" alt="Categories" width="300"/>
 
 ---
 
 ### 💰 Saving
 Savings goals management with progress tracking and contributions.
 
-![Saving](screenshots/Saving.jpg)
+<img src="screenshots/Saving.jpg" alt="Saving" width="300"/>
 
 ---
 
 ### ➕ Add Transaction
 Form to add new income/expense with category, date, description, and amount.
 
-![Add Transaction](screenshots/AddTransaction.jpg)
+<img src="screenshots/AddTransaction.jpg" alt="Add Transaction" width="300"/>
 
 
 ---
